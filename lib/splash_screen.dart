@@ -5,6 +5,15 @@ import 'package:epoch/starting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// These are import statements. They bring in functionality from other parts
+// of your project or external packages:
+
+// dart:async is for using timers
+// starting_page.dart is another file in my project, i declare it 
+//for moving to that page , ie after showing splash screen for 5 second it moves to starting_page
+// flutter/material.dart contains core Flutter widgets
+// google_fonts is a package for using Google Fonts in your app
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
