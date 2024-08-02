@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'user_database.dart';
 import 'register-page.dart';
 import 'home.dart';
-// Make sure to create this file
 
 class LoginPage extends StatefulWidget {
   @override
@@ -219,29 +218,23 @@ class _LoginPageState extends State<LoginPage> {
       final loginResult = await UserDatabase.loginUser(username, password);
 
       if (loginResult == LoginResult.success) {
-        // Show success popup
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Success'),
-              content: Text('Login successful!'),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Dismiss the dialog
-                    // Navigate to the HomePage and remove all previous routes
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                      (Route<dynamic> route) => false,
-                    );
-                  },
-                ),
-              ],
-            );
-          },
+        // Show custom popup
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: CustomPopup(),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            duration: Duration(seconds: 2),
+          ),
         );
+
+        // Navigate to HomePage after a short delay
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => HomePage()),
+            (Route<dynamic> route) => false,
+          );
+        });
       } else if (loginResult == LoginResult.invalidUsername) {
         setState(() {
           _usernameError = 'Invalid username';
@@ -272,4 +265,31 @@ class CustomClipPath extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class CustomPopup extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        gradient: LinearGradient(
+          colors: <Color>[Color(0xFF01320F), Color(0xFF22A547)],
+          stops: <double>[0, 1],
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.lock_open, color: Colors.white),
+          SizedBox(width: 12.0),
+          Text(
+            'Login Successful',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
 }

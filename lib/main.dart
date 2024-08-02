@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:epoch/splash_screen.dart';
 import 'package:epoch/user_database.dart';
+import 'package:epoch/plant_store.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +19,12 @@ void main() async {
   // Initialize the UserDatabase
   await UserDatabase.initialize();
   
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => PlantStore(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +35,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Epoch Flora",
-      home: SplashScreen()
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: SplashScreen(),
+      // You can add routes here if needed
+      // routes: {
+      //   '/home': (context) => HomeScreen(),
+      // },
     );
   }
 }
