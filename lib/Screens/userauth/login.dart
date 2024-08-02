@@ -1,5 +1,7 @@
+// This line tells Dart to ignore warnings about using const constructors
 // ignore_for_file: prefer_const_constructors
 
+// These lines import necessary Flutter packages and custom files
 import 'package:epoch/Screens/admin_auth/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,27 +9,41 @@ import '../../database/user_database.dart';
 import 'register-page.dart';
 import '../user/home.dart';
 
+// This creates a login page that can change over time (e.g., showing error messages)
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
+// This class contains all the changeable content for the login page
 class _LoginPageState extends State<LoginPage> {
+  // This key helps identify and validate the form
   final _formKey = GlobalKey<FormState>();
+
+  // These controllers manage the text input for username and password
+  // Example: When user types "john_doe", _usernameController.text will be "john_doe"
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  // This boolean controls whether the password is shown as dots or plain text
   bool _obscureText = true;
+
+  // These will store error messages for username and password if needed
   String? _usernameError;
   String? _passwordError;
 
   @override
   Widget build(BuildContext context) {
+    // Scaffold provides the basic structure for the page
     return Scaffold(
+      // SingleChildScrollView allows the page to be scrolled if it's too long
       body: SingleChildScrollView(
+        // Form groups together and validates form fields
         child: Form(
           key: _formKey,
           child: Column(
             children: [
+              // This creates a custom-shaped container for the top image
               ClipPath(
                 clipper: CustomClipPath(),
                 child: Container(
@@ -39,14 +55,18 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
+              // This adds space around its child widgets
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // This centers the "Welcome to Flora" text
                     Center(
                       child: Text(
                         'Welcome to Flora',
+                        // This uses a custom Google Font for styling
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -54,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 5),
+                    SizedBox(height: 5), // Adds a small vertical space
                     Center(
                       child: Text(
                         'Login to your account',
@@ -66,6 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     SizedBox(height: 30),
+                    // This creates the username input field
                     TextFormField(
                       controller: _usernameController,
                       decoration: InputDecoration(
@@ -79,6 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         errorText: _usernameError,
                       ),
+                      // This checks if the username is valid
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your username';
@@ -87,17 +109,20 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                     SizedBox(height: 20),
+                    // This creates the password input field
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: _obscureText,
+                      obscureText: _obscureText, // Hides the password text
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: Icon(Icons.lock),
+                        // This adds a button to show/hide the password
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureText ? Icons.visibility : Icons.visibility_off,
                           ),
                           onPressed: () {
+                            // This toggles the password visibility
                             setState(() {
                               _obscureText = !_obscureText;
                             });
@@ -111,6 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         errorText: _passwordError,
                       ),
+                      // This checks if the password is valid
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
@@ -119,10 +145,13 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                     SizedBox(height: 10),
+                    // This aligns the "Admin Login" text to the right
                     Align(
                       alignment: Alignment.centerRight,
+                      // This detects taps on the "Admin Login" text
                       child: GestureDetector(
                         onTap: () {
+                          // This navigates to the AdminLogin page when tapped
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => AdminLogin()),
@@ -138,6 +167,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     SizedBox(height: 20),
+                    // This creates the login button
                     Center(
                       child: Container(
                         width: 200,
@@ -158,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: _loginUser,
+                          onPressed: _loginUser, // Calls _loginUser when pressed
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -178,9 +208,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     SizedBox(height: 20),
+                    // This creates the "Don't have an account?" link
                     Center(
                       child: GestureDetector(
                         onTap: () {
+                          // This navigates to the RegisterPage when tapped
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => RegisterPage()),
@@ -205,20 +237,23 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // This method handles the login process
   void _loginUser() async {
     if (_formKey.currentState!.validate()) {
       final username = _usernameController.text;
       final password = _passwordController.text;
 
+      // Clear any previous error messages
       setState(() {
         _usernameError = null;
         _passwordError = null;
       });
 
+      // Attempt to login the user
       final loginResult = await UserDatabase.loginUser(username, password);
 
       if (loginResult == LoginResult.success) {
-        // Show custom popup
+        // Show a success popup
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: CustomPopup(),
@@ -236,10 +271,12 @@ class _LoginPageState extends State<LoginPage> {
           );
         });
       } else if (loginResult == LoginResult.invalidUsername) {
+        // Show error for invalid username
         setState(() {
           _usernameError = 'Invalid username';
         });
       } else if (loginResult == LoginResult.invalidPassword) {
+        // Show error for invalid password
         setState(() {
           _passwordError = 'Invalid password';
         });
@@ -248,6 +285,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
+// This class creates a custom shape for the top image container
 class CustomClipPath extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -267,6 +305,7 @@ class CustomClipPath extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
+// This class creates a custom widget for the login success popup
 class CustomPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

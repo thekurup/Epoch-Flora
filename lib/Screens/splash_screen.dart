@@ -1,55 +1,61 @@
+// These lines tell the Dart analyzer to ignore specific lint rules
 // ignore_for_file: prefer_const_constructors, sized_box_for_whitespace
 
+// Importing necessary packages and files
 import 'dart:async';
 import 'package:epoch/Screens/starting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// These are import statements. They bring in functionality from other parts
-// of your project or external packages:
-
-// dart:async is for using timers
-// starting_page.dart is another file in my project, i declare it 
-//for moving to that page , ie after showing splash screen for 5 second it moves to starting_page
-// flutter/material.dart contains core Flutter widgets
-// google_fonts is a package for using Google Fonts in your app
-
+// Defining a stateful widget named SplashScreen
 class SplashScreen extends StatefulWidget {
+  // Constructor for SplashScreen, with an optional key parameter
   const SplashScreen({super.key});
 
+  // Creating the mutable state for this widget
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+// The mutable state for the SplashScreen widget
 class _SplashScreenState extends State<SplashScreen> {
-   @override
+  @override
   void initState() {
     super.initState();
-    // Set up the timer to navigate after 3 seconds
+    // Setting up a timer to navigate after 3 seconds
     Timer(Duration(seconds: 3), () {
+      // Replacing the current screen with StartingPage after 3 seconds
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => StartingPage()),
       );
     });
   }
+
+  // Building the UI for this widget
   @override
   Widget build(BuildContext context) {
+    // Main container for the splash screen
     return Container(
+      // Styling the main container
       decoration: BoxDecoration(
-        color: Color(0xFFE3FFD1),
-        borderRadius: BorderRadius.circular(40),
+        color: Color(0xFFE3FFD1), // Light green background color
+        borderRadius: BorderRadius.circular(40), // Rounded corners
       ),
       child: Container(
+        // Adding padding to the inner container
         padding: EdgeInsets.fromLTRB(34, 272, 33, 263),
+        // Using a Stack to layer widgets on top of each other
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            // Main content of the splash screen
             SizedBox(
               width: double.infinity,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Container for the app icon
                   Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
@@ -62,9 +68,11 @@ class _SplashScreenState extends State<SplashScreen> {
                       height: 300,
                     ),
                   ),
+                  // Container for the app name text
                   Container(
                     margin: EdgeInsets.fromLTRB(0, 0, 3.3, 0),
                     child: RichText(
+                      // Using RichText to style different parts of the text differently
                       text: TextSpan(
                         text: 'Epoch ',
                         style: GoogleFonts.getFont(
@@ -91,6 +99,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ],
               ),
             ),
+            // Positioned widget for the top leaf image
             Positioned(
               left: -34,
               right: -33,
@@ -108,6 +117,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
             ),
+            // Positioned widget for the bottom leaf image
             Positioned(
               left: -34,
               right: -33,

@@ -1,30 +1,41 @@
+// This line tells the Dart analyzer to ignore certain warnings for this file
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+// Import necessary packages and files
 import 'package:epoch/Screens/admin/admin_home.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Define a stateful widget for the admin login page
 class AdminLogin extends StatefulWidget {
   @override
   _AdminLoginState createState() => _AdminLoginState();
 }
 
+// Define the state for the AdminLogin widget
 class _AdminLoginState extends State<AdminLogin> {
-  bool _obscureText = true;
-  bool _isLoading = false;
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  // Variables to control password visibility and loading state
+  bool _obscureText = true; // Controls whether the password is visible or hidden
+  bool _isLoading = false; // Indicates if a login attempt is in progress
 
+  // Controllers for username and password input fields
+  final _usernameController = TextEditingController(); // Manages the username input
+  final _passwordController = TextEditingController(); // Manages the password input
+
+  // Function to handle the login process
   void _login() {
+    // Get the entered username and password
     final _username = _usernameController.text;
     final _password = _passwordController.text;
     
+    // Check if username or password is empty
     if (_username.isEmpty || _password.isEmpty) {
+      // Show an error message if either field is empty
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter both username and password')),
       );
     } else if (_username == 'arjun' && _password == 'arjun24') {
-      // Login successful
+      // If login is successful, save login state and navigate to admin home page
       SharedPreferences.getInstance().then((_sharedpref) {
         _sharedpref.setBool('isLoggedIn', true);
         Navigator.pushReplacement(
@@ -33,6 +44,7 @@ class _AdminLoginState extends State<AdminLogin> {
         );
       });
     } else if (_username != 'arjun') {
+      // Show error for incorrect username
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Username you entered is incorrect'),
@@ -40,6 +52,7 @@ class _AdminLoginState extends State<AdminLogin> {
         ),
       );
     } else {
+      // Show error for incorrect password
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Password you entered is incorrect'),
@@ -48,6 +61,7 @@ class _AdminLoginState extends State<AdminLogin> {
       );
     }
 
+    // Update the loading state
     setState(() {
       _isLoading = false;
     });
@@ -55,8 +69,10 @@ class _AdminLoginState extends State<AdminLogin> {
 
   @override
   Widget build(BuildContext context) {
+    // Build the UI for the login page
     return Scaffold(
       body: Container(
+        // Set background image for the login page
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/adminbg.png'),
@@ -66,6 +82,7 @@ class _AdminLoginState extends State<AdminLogin> {
         child: SafeArea(
           child: Column(
             children: [
+              // Back button at the top left
               Align(
                 alignment: Alignment.topLeft,
                 child: IconButton(
@@ -75,6 +92,7 @@ class _AdminLoginState extends State<AdminLogin> {
                   },
                 ),
               ),
+              // Main content of the login page
               Expanded(
                 child: Center(
                   child: Padding(
@@ -83,6 +101,7 @@ class _AdminLoginState extends State<AdminLogin> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // "Admin Login" title
                         Text(
                           'Admin Login',
                           style: TextStyle(
@@ -92,6 +111,7 @@ class _AdminLoginState extends State<AdminLogin> {
                           ),
                         ),
                         SizedBox(height: 20),
+                        // Username input field
                         TextField(
                           controller: _usernameController,
                           decoration: InputDecoration(
@@ -106,6 +126,7 @@ class _AdminLoginState extends State<AdminLogin> {
                           ),
                         ),
                         SizedBox(height: 16),
+                        // Password input field
                         TextField(
                           controller: _passwordController,
                           obscureText: _obscureText,
@@ -120,6 +141,7 @@ class _AdminLoginState extends State<AdminLogin> {
                                 color: Colors.green,
                               ),
                               onPressed: () {
+                                // Toggle password visibility
                                 setState(() {
                                   _obscureText = !_obscureText;
                                 });
@@ -132,6 +154,7 @@ class _AdminLoginState extends State<AdminLogin> {
                           ),
                         ),
                         SizedBox(height: 24),
+                        // Login button
                         Center(
                           child: Container(
                             width: 200,
@@ -153,6 +176,7 @@ class _AdminLoginState extends State<AdminLogin> {
                             ),
                             child: ElevatedButton(
                               onPressed: () {
+                                // Start login process
                                 setState(() {
                                   _isLoading = true;
                                 });
@@ -178,6 +202,7 @@ class _AdminLoginState extends State<AdminLogin> {
                           ),
                         ),
                         SizedBox(height: 16),
+                        // Inspirational quote
                         Center(
                           child: Text(
                             '"Rooted in every seedling, lies the\npromise of a greener tomorrow"\n— Epoch Flora',
