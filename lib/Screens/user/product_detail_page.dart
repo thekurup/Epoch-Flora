@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:epoch/plant_store.dart';
+import 'package:epoch/Screens/user/plant_store.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProductDetailPage extends StatelessWidget {

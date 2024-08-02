@@ -1,11 +1,11 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:epoch/login.dart';
+import 'package:epoch/Screens/userauth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:epoch/plant_store.dart';
+import 'package:epoch/Screens/user/plant_store.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:epoch/product_detail_page.dart';
+import 'package:epoch/Screens/user/product_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   @override

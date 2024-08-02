@@ -1,11 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:epoch/admin_login.dart';
+import 'package:epoch/Screens/admin_auth/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'user_database.dart';
+import '../../database/user_database.dart';
 import 'register-page.dart';
-import 'home.dart';
+import '../user/home.dart';
 
 class LoginPage extends StatefulWidget {
   @override

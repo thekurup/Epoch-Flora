@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:epoch/splash_screen.dart';
-import 'package:epoch/user_database.dart';
-import 'package:epoch/plant_store.dart';
+import 'package:epoch/Screens/splash_screen.dart';
+import 'package:epoch/database/user_database.dart';
+import 'package:epoch/Screens/user/plant_store.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

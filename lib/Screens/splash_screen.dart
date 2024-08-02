@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, sized_box_for_whitespace
 
 import 'dart:async';
-import 'package:epoch/starting_page.dart';
+import 'package:epoch/Screens/starting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

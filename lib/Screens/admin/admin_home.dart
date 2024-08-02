@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:epoch/admin_login.dart'; // Make sure this import path is correct
+import 'package:epoch/Screens/admin_auth/admin_login.dart'; // Make sure this import path is correct
 
 class AdminHomePage extends StatelessWidget {
   @override

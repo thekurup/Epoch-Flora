@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'login.dart'; // Import the LoginPage
+import 'userauth/login.dart'; // Import the LoginPage
 
 class StartingPage extends StatelessWidget {
   const StartingPage({super.key});

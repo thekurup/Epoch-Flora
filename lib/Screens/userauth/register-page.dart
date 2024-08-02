@@ -1,12 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:epoch/privacypage.dart';
+import 'package:epoch/Screens/userauth/privacypage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:email_validator/email_validator.dart';
 import 'dart:math' show pi;
-import 'user_database.dart';
+import '../../database/user_database.dart';
 import 'login.dart';
 
 class RegisterPage extends StatefulWidget {
