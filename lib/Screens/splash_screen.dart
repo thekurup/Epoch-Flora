@@ -4,6 +4,7 @@
 // Importing necessary packages and files
 import 'dart:async';
 import 'package:epoch/Screens/starting_page.dart';
+import 'package:epoch/database/user_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

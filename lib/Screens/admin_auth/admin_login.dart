@@ -40,7 +40,7 @@ class _AdminLoginState extends State<AdminLogin> {
         _sharedpref.setBool('isLoggedIn', true);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => AdminHomePage()),
+          MaterialPageRoute(builder: (context) => AdminHome()),
         );
       });
     } else if (_username != 'arjun') {
