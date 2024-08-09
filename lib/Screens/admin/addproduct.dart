@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +19,7 @@ class _AddProductState extends State<AddProduct> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   
-  String _selectedCategory = 'Indoor Plant';
+  String? _selectedCategory;
   File? _image;
   
   final ImagePicker _picker = ImagePicker();
@@ -26,6 +27,29 @@ class _AddProductState extends State<AddProduct> {
   List<String> _categories = ['Indoor Plant', 'Outdoor Plant', 'Flowering Plant'];
 
   bool _formSubmitted = false;
+  int _descriptionCharCount = 0;
+  final int _maxCharCount = 200;
+
+  @override
+  void initState() {
+    super.initState();
+    _descriptionController.addListener(_updateDescriptionCharCount);
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.removeListener(_updateDescriptionCharCount);
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  void _updateDescriptionCharCount() {
+    setState(() {
+      _descriptionCharCount = _descriptionController.text.length;
+    });
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -59,7 +83,7 @@ class _AddProductState extends State<AddProduct> {
             children: [
               _buildTextField('Name', _nameController, 'Enter Name'),
               SizedBox(height: 16),
-              _buildTextField('Description', _descriptionController, 'Enter description', maxLines: 3),
+              _buildDescriptionField(),
               SizedBox(height: 16),
               _buildTextField('Price', _priceController, 'Enter Price'),
               SizedBox(height: 16),
@@ -93,11 +117,69 @@ class _AddProductState extends State<AddProduct> {
             if (_formSubmitted && (value == null || value.isEmpty)) {
               return 'Please enter ${label.toLowerCase()}';
             }
-            if (label == 'Price' && double.tryParse(value!) == null) {
-              return 'Please enter a valid number';
+            if (label == 'Name') {
+              if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value!)) {
+                return 'Product name should only contain characters';
+              }
+              // Changed validation: now checks for at least 3 characters
+              if (value.trim().length < 3) {
+                return 'Product name must contain at least 3 characters';
+              }
+            }
+            if (label == 'Price') {
+              if (double.tryParse(value!) == null) {
+                return 'Please enter a valid number';
+              }
+              if (double.parse(value) <= 0) {
+                return 'Price must be greater than 0';
+              }
             }
             return null;
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        Stack(
+          children: [
+            TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                hintText: 'Enter description',
+                border: OutlineInputBorder(),
+                errorStyle: TextStyle(color: Colors.red),
+                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 30),
+              ),
+              maxLines: 3,
+              validator: (value) {
+                if (_formSubmitted && (value == null || value.isEmpty)) {
+                  return 'Please enter description';
+                }
+                return null;
+              },
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(_maxCharCount),
+              ],
+            ),
+            Positioned(
+              right: 10,
+              bottom: 10,
+              child: Text(
+                '${_maxCharCount - _descriptionCharCount}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: (_maxCharCount - _descriptionCharCount) < 50 ? Colors.red : Colors.grey,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -107,10 +189,11 @@ class _AddProductState extends State<AddProduct> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Categories', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text('Category', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _selectedCategory,
+          hint: Text('Select Category'),
           items: _categories.map((String category) {
             return DropdownMenuItem<String>(
               value: category,
@@ -119,12 +202,18 @@ class _AddProductState extends State<AddProduct> {
           }).toList(),
           onChanged: (String? newValue) {
             setState(() {
-              _selectedCategory = newValue!;
+              _selectedCategory = newValue;
             });
           },
           decoration: InputDecoration(
             border: OutlineInputBorder(),
           ),
+          validator: (value) {
+            if (_formSubmitted && value == null) {
+              return 'Please select a category';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -191,7 +280,7 @@ class _AddProductState extends State<AddProduct> {
       _saveProduct();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all fields and select an image')),
+        SnackBar(content: Text('Please fill all fields correctly, select a category, and select an image')),
       );
     }
   }
@@ -210,7 +299,7 @@ class _AddProductState extends State<AddProduct> {
         _nameController.text,
         _descriptionController.text,
         double.parse(_priceController.text),
-        _selectedCategory,
+        _selectedCategory!,
         imagePath ?? '',
       );
 
