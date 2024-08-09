@@ -12,25 +12,21 @@ class AddProduct extends StatefulWidget {
 }
 
 class _AddProductState extends State<AddProduct> {
-  // Form key for validation
   final _formKey = GlobalKey<FormState>();
   
-  // Controllers for text fields
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   
-  // Selected category and image file
   String _selectedCategory = 'Indoor Plant';
   File? _image;
   
-  // ImagePicker instance for image selection
   final ImagePicker _picker = ImagePicker();
 
-  // List of available categories
   List<String> _categories = ['Indoor Plant', 'Outdoor Plant', 'Flowering Plant'];
 
-  // Method to pick an image from the gallery
+  bool _formSubmitted = false;
+
   Future<void> _pickImage() async {
     try {
       final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -79,7 +75,6 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-  // Helper method to build text fields
   Widget _buildTextField(String label, TextEditingController controller, String hint, {int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,13 +86,14 @@ class _AddProductState extends State<AddProduct> {
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(),
+            errorStyle: TextStyle(color: Colors.red),
           ),
           maxLines: maxLines,
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter $label';
+            if (_formSubmitted && (value == null || value.isEmpty)) {
+              return 'Please enter ${label.toLowerCase()}';
             }
-            if (label == 'Price' && double.tryParse(value) == null) {
+            if (label == 'Price' && double.tryParse(value!) == null) {
               return 'Please enter a valid number';
             }
             return null;
@@ -107,7 +103,6 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-  // Helper method to build the category dropdown
   Widget _buildCategoryDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +130,6 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-  // Helper method to build the image picker
   Widget _buildImagePicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,16 +156,23 @@ class _AddProductState extends State<AddProduct> {
                   ),
           ),
         ),
+        if (_formSubmitted && _image == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Please select a product image.',
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
       ],
     );
   }
 
-  // Helper method to build the save button
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _saveProduct,
+        onPressed: _validateAndSaveProduct,
         child: Text('Save'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
@@ -181,59 +182,59 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-  // Method to handle saving the product
+  void _validateAndSaveProduct() {
+    setState(() {
+      _formSubmitted = true;
+    });
+
+    if (_formKey.currentState!.validate() && _image != null) {
+      _saveProduct();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill all fields and select an image')),
+      );
+    }
+  }
+
   Future<void> _saveProduct() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        // Save the image to local storage and get the path
-        String? imagePath;
-        if (_image != null) {
-          final directory = await getApplicationDocumentsDirectory();
-          final fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.png';
-          final savedImage = await _image!.copy('${directory.path}/$fileName');
-          imagePath = savedImage.path;
-        }
+    try {
+      String? imagePath;
+      if (_image != null) {
+        final directory = await getApplicationDocumentsDirectory();
+        final fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.png';
+        final savedImage = await _image!.copy('${directory.path}/$fileName');
+        imagePath = savedImage.path;
+      }
 
-        // Create a new Product object
-        final product = Product(
-          _nameController.text,
-          _descriptionController.text,
-          double.parse(_priceController.text),
-          _selectedCategory,
-          imagePath ?? '',
-        );
+      final product = Product(
+        _nameController.text,
+        _descriptionController.text,
+        double.parse(_priceController.text),
+        _selectedCategory,
+        imagePath ?? '',
+      );
 
-        // Save the product to the database
-        final success = await UserDatabase.addProduct(product);
+      final success = await UserDatabase.addProduct(product);
 
-        if (success) {
-          // Show a success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Product saved successfully')),
-          );
-          
-          // Clear the form
-          _nameController.clear();
-          _descriptionController.clear();
-          _priceController.clear();
-          setState(() {
-            _selectedCategory = 'Indoor Plant';
-            _image = null;
-          });
-        } else {
-          // Show an error message if saving failed
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to save product')),
-          );
-        }
-      } catch (e) {
-        // Print the error to the console for debugging
-        print('Error saving product: $e');
-        // Show an error message to the user
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred while saving the product')),
+          SnackBar(content: Text('Product saved successfully')),
+        );
+        
+        // Refresh the page by pushing a new instance of AddProduct
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => AddProduct()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save product')),
         );
       }
+    } catch (e) {
+      print('Error saving product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred while saving the product')),
+      );
     }
   }
 }

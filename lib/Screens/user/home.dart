@@ -22,7 +22,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _loadProducts();
-    // Initialize TabController with 3 tabs
     _tabController = TabController(length: 3, vsync: this);
   }
 
@@ -32,7 +31,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  // Load all products from the database
   Future<void> _loadProducts() async {
     final products = UserDatabase.getAllProducts();
     setState(() {
@@ -40,14 +38,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
   }
 
-  // Method to refresh product list (call this after adding a new product)
   void refreshProductList() {
     setState(() {
       _loadProducts();
     });
   }
 
-  // Logout method
   void _logout() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => LoginPage()),
@@ -120,6 +116,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ],
                 ),
               ),
+              // Latest Products Section
+              LatestProductsSection(),
             ],
           ),
           // Logout button
@@ -148,17 +146,11 @@ class ProductList extends StatelessWidget {
   Widget build(BuildContext context) {
     final products = UserDatabase.getProductsByCategory(category);
     
-    // Debug prints
-    print('Category: $category');
-    print('Number of products: ${products.length}');
-    
     return ListView.builder(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
-        // Debug print for each product
-        print('Product ${index + 1}: ${product.name}, Category: ${product.category}');
         return Padding(
           padding: EdgeInsets.only(bottom: 16),
           child: ProductCard(product: product),
@@ -255,6 +247,121 @@ class ProductCard extends StatelessWidget {
               child: Icon(
                 Icons.favorite_border,
                 color: Colors.grey[400],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// New widget for Latest Products Section
+class LatestProductsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Get the latest products (assuming the most recent are at the end of the list)
+    final latestProducts = UserDatabase.getAllProducts().reversed.take(5).toList();
+
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Section header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Latest Plants',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // TODO: Navigate to all products page
+                },
+                child: Text(
+                  'Show All',
+                  style: GoogleFonts.poppins(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          // Latest products list
+          Container(
+            height: 150, // Adjust this value as needed
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: latestProducts.length,
+              itemBuilder: (context, index) {
+                final product = latestProducts[index];
+                return LatestProductCard(product: product);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Widget for each product card in the Latest Products section
+class LatestProductCard extends StatelessWidget {
+  final Product product;
+
+  const LatestProductCard({Key? key, required this.product}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(product: product),
+          ),
+        );
+      },
+      child: Container(
+        width: 120,
+        margin: EdgeInsets.only(right: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                File(product.imagePath),
+                width: 120,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+            ),
+            SizedBox(height: 8),
+            // Product name
+            Text(
+              product.name,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            // Product price
+            Text(
+              '₹${product.price.toStringAsFixed(2)}',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: Colors.green,
               ),
             ),
           ],
