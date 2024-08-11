@@ -3,10 +3,30 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
 import 'dart:io';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends StatefulWidget {
   final Product product;
 
   const ProductDetailPage({Key? key, required this.product}) : super(key: key);
+
+  @override
+  _ProductDetailPageState createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> {
+  late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.product.isFavorite;
+  }
+
+  void _toggleFavorite() async {
+    await UserDatabase.toggleFavorite(widget.product);
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +38,7 @@ class ProductDetailPage extends StatelessWidget {
             Stack(
               children: [
                 Image.file(
-                  File(product.imagePath),
+                  File(widget.product.imagePath),
                   width: double.infinity,
                   height: 300,
                   fit: BoxFit.cover,
@@ -41,13 +61,19 @@ class ProductDetailPage extends StatelessWidget {
                 Positioned(
                   top: 16,
                   right: 16,
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
+                  child: GestureDetector(
+                    onTap: _toggleFavorite,
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: _isFavorite ? Colors.red : Colors.black,
+                      ),
                     ),
-                    child: Icon(Icons.favorite_border, color: Colors.black),
                   ),
                 ),
               ],
@@ -58,7 +84,7 @@ class ProductDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product.name,
+                    widget.product.name,
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -66,7 +92,7 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    product.category,
+                    widget.product.category,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       color: Colors.grey,
@@ -74,7 +100,7 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                   SizedBox(height: 16),
                   Text(
-                    '₹${product.price.toStringAsFixed(2)}',
+                    '₹${widget.product.price.toStringAsFixed(2)}',
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -98,7 +124,7 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -113,7 +139,7 @@ class ProductDetailPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${product.name} added to cart')),
+                    SnackBar(content: Text('${widget.product.name} added to cart')),
                   );
                 },
                 child: Text(

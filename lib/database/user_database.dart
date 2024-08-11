@@ -35,7 +35,10 @@ class Product extends HiveObject {
   @HiveField(4)
   late String imagePath;
 
-  Product(this.name, this.description, this.price, this.category, this.imagePath);
+  @HiveField(5)
+  late bool isFavorite;
+
+  Product(this.name, this.description, this.price, this.category, this.imagePath, {this.isFavorite = false});
 }
 
 enum LoginResult {
@@ -165,6 +168,7 @@ class UserDatabase {
       existingProduct.price = updatedProduct.price;
       existingProduct.category = updatedProduct.category;
       existingProduct.imagePath = updatedProduct.imagePath;
+      existingProduct.isFavorite = updatedProduct.isFavorite;
       
       // Save the updated product
       await existingProduct.save();
@@ -177,5 +181,18 @@ class UserDatabase {
     final box = Hive.box<Product>(_productBoxName);
     await box.delete(productKey);
     return true;
+  }
+
+  // New methods for favorite functionality
+
+  static Future<void> toggleFavorite(Product product) async {
+    final box = Hive.box<Product>(_productBoxName);
+    product.isFavorite = !product.isFavorite;
+    await product.save();
+  }
+
+  static List<Product> getFavoriteProducts() {
+    final box = Hive.box<Product>(_productBoxName);
+    return box.values.where((product) => product.isFavorite).toList();
   }
 }

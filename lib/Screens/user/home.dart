@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/Screens/userauth/login.dart';
@@ -40,9 +38,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
   }
 
-  void refreshProductList() {
+  void _toggleFavorite(Product product) async {
+    await UserDatabase.toggleFavorite(product);
     setState(() {
-      _loadProducts();
+      // Trigger a rebuild
     });
   }
 
@@ -112,14 +111,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    ProductList(category: 'Indoor Plant'),
-                    ProductList(category: 'Outdoor Plant'),
-                    ProductList(category: 'Flowering Plant'),
+                    ProductList(category: 'Indoor Plant', onFavoriteToggle: _toggleFavorite),
+                    ProductList(category: 'Outdoor Plant', onFavoriteToggle: _toggleFavorite),
+                    ProductList(category: 'Flowering Plant', onFavoriteToggle: _toggleFavorite),
                   ],
                 ),
               ),
               // Latest Products Section
-              LatestProductsSection(),
+              LatestProductsSection(onFavoriteToggle: _toggleFavorite),
             ],
           ),
           // Logout button
@@ -138,11 +137,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
-// Widget to display the list of products for each category
 class ProductList extends StatelessWidget {
   final String category;
+  final Function(Product) onFavoriteToggle;
 
-  const ProductList({Key? key, required this.category}) : super(key: key);
+  const ProductList({Key? key, required this.category, required this.onFavoriteToggle}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -155,18 +154,57 @@ class ProductList extends StatelessWidget {
         final product = products[index];
         return Padding(
           padding: EdgeInsets.only(bottom: 16),
-          child: ProductCard(product: product),
+          child: ProductCard(
+            product: product,
+            onFavoriteToggle: () => onFavoriteToggle(product),
+          ),
         );
       },
     );
   }
 }
 
-// Widget to display each product card
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final Product product;
+  final VoidCallback onFavoriteToggle;
 
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCard({Key? key, required this.product, required this.onFavoriteToggle}) : super(key: key);
+
+  @override
+  _ProductCardState createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _sizeAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _sizeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 1, end: 1.2), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.2, end: 1), weight: 50),
+    ]).animate(_controller);
+    _colorAnimation = ColorTween(
+      begin: Colors.grey[400],
+      end: Colors.red,
+    ).animate(_controller);
+
+    if (widget.product.isFavorite) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +213,7 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductDetailPage(product: product),
+            builder: (context) => ProductDetailPage(product: widget.product),
           ),
         );
       },
@@ -202,7 +240,7 @@ class ProductCard extends StatelessWidget {
                 bottomLeft: Radius.circular(15),
               ),
               child: Image.file(
-                File(product.imagePath),
+                File(widget.product.imagePath),
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
@@ -216,7 +254,7 @@ class ProductCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.name,
+                      widget.product.name,
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
@@ -224,7 +262,7 @@ class ProductCard extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      product.category,
+                      widget.product.category,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -232,7 +270,7 @@ class ProductCard extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '₹${product.price.toStringAsFixed(2)}',
+                      '₹${widget.product.price.toStringAsFixed(2)}',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -246,9 +284,25 @@ class ProductCard extends StatelessWidget {
             // Favorite icon
             Padding(
               padding: EdgeInsets.all(12),
-              child: Icon(
-                Icons.favorite_border,
-                color: Colors.grey[400],
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    widget.product.isFavorite ? _controller.reverse() : _controller.forward();
+                  });
+                  widget.onFavoriteToggle();
+                },
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _sizeAnimation.value,
+                      child: Icon(
+                        widget.product.isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: _colorAnimation.value,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -258,8 +312,11 @@ class ProductCard extends StatelessWidget {
   }
 }
 
-// New widget for Latest Products Section
 class LatestProductsSection extends StatelessWidget {
+  final Function(Product) onFavoriteToggle;
+
+  const LatestProductsSection({Key? key, required this.onFavoriteToggle}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     // Get the latest products (assuming the most recent are at the end of the list)
@@ -303,7 +360,10 @@ class LatestProductsSection extends StatelessWidget {
               itemCount: latestProducts.length,
               itemBuilder: (context, index) {
                 final product = latestProducts[index];
-                return LatestProductCard(product: product);
+                return LatestProductCard(
+                  product: product,
+                  onFavoriteToggle: () => onFavoriteToggle(product),
+                );
               },
             ),
           ),
@@ -313,11 +373,11 @@ class LatestProductsSection extends StatelessWidget {
   }
 }
 
-// Widget for each product card in the Latest Products section
 class LatestProductCard extends StatelessWidget {
   final Product product;
+  final VoidCallback onFavoriteToggle;
 
-  const LatestProductCard({Key? key, required this.product}) : super(key: key);
+  const LatestProductCard({Key? key, required this.product, required this.onFavoriteToggle}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -337,14 +397,30 @@ class LatestProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                File(product.imagePath),
-                width: 120,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(product.imagePath),
+                    width: 120,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: GestureDetector(
+                    onTap: onFavoriteToggle,
+                    child: Icon(
+                      product.isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: product.isFavorite ? Colors.red : Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 8),
             // Product name
@@ -373,7 +449,6 @@ class LatestProductCard extends StatelessWidget {
   }
 }
 
-// Widget for the bottom navigation bar
 class FloatingNavBar extends StatelessWidget {
   final int currentIndex;
 
@@ -401,7 +476,7 @@ class FloatingNavBar extends StatelessWidget {
     }
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
@@ -420,3 +495,40 @@ class FloatingNavBar extends StatelessWidget {
     );
   }
 }
+
+// You can add any additional widgets or functions here if needed for the home.dart file
+
+// For example, you might want to add a function to refresh the product list:
+
+void refreshProductList() {
+  // Implementation to refresh the product list
+  // This could involve calling setState() in the parent widget
+  // or using a state management solution to update the UI
+}
+
+// If you have any global constants or utility functions specific to the home page,
+// you can define them here:
+
+const String APP_TITLE = 'Plant Shop';
+const String CURRENCY_SYMBOL = '₹';
+
+String formatPrice(double price) {
+  return '$CURRENCY_SYMBOL${price.toStringAsFixed(2)}';
+}
+
+// If you're using any custom themes or styles consistently across the home page,
+// you could define them here:
+
+final headerStyle = GoogleFonts.poppins(
+  fontWeight: FontWeight.w700,
+  fontSize: 24,
+  color: Colors.black,
+);
+
+final subHeaderStyle = GoogleFonts.poppins(
+  fontWeight: FontWeight.w500,
+  fontSize: 18,
+  color: Colors.black87,
+);
+
+// This marks the end of the home.dart file
