@@ -1,4 +1,5 @@
 import 'package:epoch/Screens/admin/addproduct.dart';
+import 'package:epoch/Screens/admin/admin_product_list.dart';
 import 'package:epoch/Screens/admin_auth/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -49,7 +50,11 @@ class AdminHome extends StatelessWidget {
                     );
                   }),
                   SizedBox(height: 20),
-                  _buildButton(context, 'Product List', () {}),
+                  _buildButton(context, 'Product List', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => AdminProductList()),
+                    );
+                  }),
                   SizedBox(height: 20),
                   _buildButton(context, 'Users List', () {}),
                   SizedBox(height: 20),

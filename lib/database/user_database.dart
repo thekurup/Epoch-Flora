@@ -152,18 +152,28 @@ class UserDatabase {
     return box.values.where((product) => product.category == category).toList();
   }
 
-  static Future<bool> updateProduct(Product updatedProduct) async {
+  static Future<bool> updateProduct(dynamic productKey, Product updatedProduct) async {
     final box = Hive.box<Product>(_productBoxName);
-    final index = box.values.toList().indexWhere((product) => product.key == updatedProduct.key);
     
-    if (index != -1) {
-      await box.putAt(index, updatedProduct);
+    if (box.containsKey(productKey)) {
+      // Get the existing product
+      final existingProduct = box.get(productKey);
+      
+      // Update the existing product's fields
+      existingProduct!.name = updatedProduct.name;
+      existingProduct.description = updatedProduct.description;
+      existingProduct.price = updatedProduct.price;
+      existingProduct.category = updatedProduct.category;
+      existingProduct.imagePath = updatedProduct.imagePath;
+      
+      // Save the updated product
+      await existingProduct.save();
       return true;
     }
     return false;
   }
 
-  static Future<bool> deleteProduct(int productKey) async {
+  static Future<bool> deleteProduct(dynamic productKey) async {
     final box = Hive.box<Product>(_productBoxName);
     await box.delete(productKey);
     return true;

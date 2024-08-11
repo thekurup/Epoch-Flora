@@ -5,19 +5,21 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:epoch/database/user_database.dart';
 
-class AddProduct extends StatefulWidget {
-  const AddProduct({Key? key}) : super(key: key);
+class EditProduct extends StatefulWidget {
+  final Product product;
+
+  const EditProduct({Key? key, required this.product}) : super(key: key);
 
   @override
-  _AddProductState createState() => _AddProductState();
+  _EditProductState createState() => _EditProductState();
 }
 
-class _AddProductState extends State<AddProduct> {
+class _EditProductState extends State<EditProduct> {
   final _formKey = GlobalKey<FormState>();
   
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _priceController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _priceController;
   
   String? _selectedCategory;
   File? _image;
@@ -33,7 +35,13 @@ class _AddProductState extends State<AddProduct> {
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController(text: widget.product.name);
+    _descriptionController = TextEditingController(text: widget.product.description);
+    _priceController = TextEditingController(text: widget.product.price.toString());
+    _selectedCategory = widget.product.category;
+    _image = File(widget.product.imagePath);
     _descriptionController.addListener(_updateDescriptionCharCount);
+    _updateDescriptionCharCount();
   }
 
   @override
@@ -71,7 +79,7 @@ class _AddProductState extends State<AddProduct> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Product'),
+        title: Text('Edit Product'),
         backgroundColor: Colors.green,
       ),
       body: SingleChildScrollView(
@@ -121,7 +129,6 @@ class _AddProductState extends State<AddProduct> {
               if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value!)) {
                 return 'Product name should only contain characters';
               }
-              // Changed validation: now checks for at least 3 characters
               if (value.trim().length < 3) {
                 return 'Product name must contain at least 3 characters';
               }
@@ -261,8 +268,8 @@ class _AddProductState extends State<AddProduct> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _validateAndSaveProduct,
-        child: Text('Save'),
+        onPressed: _validateAndUpdateProduct,
+        child: Text('Update'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           padding: EdgeInsets.symmetric(vertical: 16),
@@ -271,58 +278,60 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-  void _validateAndSaveProduct() {
+  void _validateAndUpdateProduct() {
     setState(() {
       _formSubmitted = true;
     });
 
     if (_formKey.currentState!.validate() && _image != null) {
-      _saveProduct();
+      _updateProduct();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all fields correctly, select a category, and select an image')),
+        SnackBar(content: Text('Please fill all fields correctly and select an image')),
       );
     }
   }
 
-  Future<void> _saveProduct() async {
+  Future<void> _updateProduct() async {
     try {
-      String? imagePath;
-      if (_image != null) {
+      String imagePath = widget.product.imagePath;
+      if (_image != null && _image!.path != widget.product.imagePath) {
         final directory = await getApplicationDocumentsDirectory();
         final fileName = DateTime.now().millisecondsSinceEpoch.toString() + '.png';
         final savedImage = await _image!.copy('${directory.path}/$fileName');
         imagePath = savedImage.path;
       }
 
-      final product = Product(
+      // Create a new Product instance with updated values
+      final updatedProduct = Product(
         _nameController.text,
         _descriptionController.text,
         double.parse(_priceController.text),
         _selectedCategory!,
-        imagePath ?? '',
+        imagePath,
       );
 
-      final success = await UserDatabase.addProduct(product);
+      // Use the updateProduct method from UserDatabase, passing both the key and the updated product
+      final success = await UserDatabase.updateProduct(widget.product.key, updatedProduct);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Product saved successfully')),
+          SnackBar(content: Text('Product updated successfully')),
         );
         
-        // Refresh the page by pushing a new instance of AddProduct
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => AddProduct()),
-        );
+        // Navigate back to the product list page after a short delay
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.of(context).pop(); // This will return to the product list page
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save product')),
+          SnackBar(content: Text('Failed to update product')),
         );
       }
     } catch (e) {
-      print('Error saving product: $e');
+      print('Error updating product: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred while saving the product')),
+        SnackBar(content: Text('An error occurred while updating the product')),
       );
     }
   }
