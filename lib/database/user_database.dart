@@ -41,6 +41,17 @@ class Product extends HiveObject {
   Product(this.name, this.description, this.price, this.category, this.imagePath, {this.isFavorite = false});
 }
 
+@HiveType(typeId: 2)
+class CartItem extends HiveObject {
+  @HiveField(0)
+  late Product product;
+
+  @HiveField(1)
+  late int quantity;
+
+  CartItem(this.product, this.quantity);
+}
+
 enum LoginResult {
   success,
   invalidUsername,
@@ -50,10 +61,12 @@ enum LoginResult {
 class UserDatabase {
   static const String _userBoxName = 'users';
   static const String _productBoxName = 'products';
+  static const String _cartBoxName = 'cart';
 
   static Future<void> initialize() async {
     await Hive.openBox<User>(_userBoxName);
     await Hive.openBox<Product>(_productBoxName);
+    await Hive.openBox<CartItem>(_cartBoxName);
   }
 
   // User-related methods
@@ -183,7 +196,7 @@ class UserDatabase {
     return true;
   }
 
-  // New methods for favorite functionality
+  // Favorite-related methods
 
   static Future<void> toggleFavorite(Product product) async {
     final box = Hive.box<Product>(_productBoxName);
@@ -194,5 +207,57 @@ class UserDatabase {
   static List<Product> getFavoriteProducts() {
     final box = Hive.box<Product>(_productBoxName);
     return box.values.where((product) => product.isFavorite).toList();
+  }
+
+  // Cart-related methods
+
+  static Future<bool> addToCart(Product product, {int quantity = 1}) async {
+    final box = Hive.box<CartItem>(_cartBoxName);
+    final existingItem = box.values.firstWhere(
+      (item) => item.product.name == product.name,
+      orElse: () => CartItem(product, 0),
+    );
+
+    if (existingItem.quantity == 0) {
+      await box.add(CartItem(product, quantity));
+    } else {
+      existingItem.quantity += quantity;
+      await existingItem.save();
+    }
+    return true;
+  }
+
+  static List<CartItem> getCartItems() {
+    final box = Hive.box<CartItem>(_cartBoxName);
+    return box.values.toList();
+  }
+
+  static Future<void> updateCartItem(CartItem item) async {
+    await item.save();
+  }
+
+  static Future<bool> removeFromCart(Product product) async {
+    final box = Hive.box<CartItem>(_cartBoxName);
+    try {
+      final itemToRemove = box.values.firstWhere(
+        (item) => item.product.name == product.name,
+      );
+      await itemToRemove.delete();
+      return true;
+    } catch (e) {
+      // Item not found in the cart
+      print('Product ${product.name} not found in the cart');
+      return false;
+    }
+  }
+
+  static Future<void> clearCart() async {
+    final box = Hive.box<CartItem>(_cartBoxName);
+    await box.clear();
+  }
+
+  static double getCartTotal() {
+    final cartItems = getCartItems();
+    return cartItems.fold(0, (total, item) => total + (item.product.price * item.quantity));
   }
 }

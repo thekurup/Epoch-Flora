@@ -19,6 +19,9 @@ void main() async {
   // Register the ProductAdapter
   Hive.registerAdapter(ProductAdapter());
   
+  // Register the CartItemAdapter
+  Hive.registerAdapter(CartItemAdapter());
+  
   // Initialize the UserDatabase
   await UserDatabase.initialize();
   

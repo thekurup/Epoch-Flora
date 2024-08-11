@@ -14,6 +14,7 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   late bool _isFavorite;
+  int _quantity = 1;
 
   @override
   void initState() {
@@ -26,6 +27,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() {
       _isFavorite = !_isFavorite;
     });
+  }
+
+  void _incrementQuantity() {
+    setState(() {
+      _quantity++;
+    });
+  }
+
+  void _decrementQuantity() {
+    if (_quantity > 1) {
+      setState(() {
+        _quantity--;
+      });
+    }
+  }
+
+  void _addToCart() async {
+    bool success = await UserDatabase.addToCart(widget.product, quantity: _quantity);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${widget.product.name} added to cart')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add ${widget.product.name} to cart')),
+      );
+    }
   }
 
   @override
@@ -136,26 +164,51 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             Expanded(child: SizedBox()),
             Padding(
               padding: EdgeInsets.all(16),
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${widget.product.name} added to cart')),
-                  );
-                },
-                child: Text(
-                  'Add To Cart',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: _decrementQuantity,
+                        ),
+                        Text(
+                          _quantity.toString(),
+                          style: GoogleFonts.poppins(fontSize: 16),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: _incrementQuantity,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _addToCart,
+                      child: Text(
+                        'Add To Cart',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        minimumSize: Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
