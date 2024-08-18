@@ -21,10 +21,12 @@ class UserAdapter extends TypeAdapter<User> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     // Create and return a new User object with the read data
+    // New: Added profileImagePath to the User constructor
     return User(
       fields[0] as String,  // username
       fields[1] as String,  // email
       fields[2] as String,  // hashedPassword
+      profileImagePath: fields[3] as String?,  // New: Read profileImagePath
     );
   }
 
@@ -33,13 +35,15 @@ class UserAdapter extends TypeAdapter<User> {
   // It's like packing a box with user information
   void write(BinaryWriter writer, User obj) {
     writer
-      ..writeByte(3)  // Write that User has 3 fields
+      ..writeByte(4)  // New: Write that User now has 4 fields
       ..writeByte(0)
       ..write(obj.username)  // Write username
       ..writeByte(1)
       ..write(obj.email)  // Write email
       ..writeByte(2)
-      ..write(obj.hashedPassword);  // Write hashedPassword
+      ..write(obj.hashedPassword)  // Write hashedPassword
+      ..writeByte(3)
+      ..write(obj.profileImagePath);  // New: Write profileImagePath
   }
 
   @override
@@ -158,7 +162,7 @@ class CartItemAdapter extends TypeAdapter<CartItem> {
           typeId == other.typeId;
 }
 
-// New: This class helps Hive understand how to save and load Category objects
+// This class helps Hive understand how to save and load Category objects
 class CategoryAdapter extends TypeAdapter<Category> {
   @override
   final int typeId = 3;  // This is like a unique ID for the Category class

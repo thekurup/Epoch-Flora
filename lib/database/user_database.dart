@@ -2,7 +2,7 @@
 import 'package:hive/hive.dart';  // Hive is a lightweight and fast database
 import 'package:crypto/crypto.dart';  // Used for password hashing
 import 'dart:convert';  // Provides encoding and decoding for JSON, UTF-8, and more
-import 'package:shared_preferences/shared_preferences.dart';  // New: Used for storing current user
+import 'package:shared_preferences/shared_preferences.dart';  // Used for storing current user
 
 // This line is needed for Hive to generate TypeAdapters
 part 'user_database.g.dart';
@@ -19,8 +19,12 @@ class User extends HiveObject {
   @HiveField(2)  // This is like labeling a box to store the hashed password
   late String hashedPassword;
 
+  @HiveField(3)  // New: This is like labeling a box to store the profile image path
+  String? profileImagePath;
+
   // Constructor: This is like filling out a form to create a new user
-  User(this.username, this.email, this.hashedPassword);
+  // New: Added optional profileImagePath parameter
+  User(this.username, this.email, this.hashedPassword, {this.profileImagePath});
 }
 
 // Product class: Represents a product in our app
@@ -85,7 +89,7 @@ class UserDatabase {
   static const String _productBoxName = 'products';
   static const String _cartBoxName = 'cart';
   static const String _categoryBoxName = 'categories';
-  static const String _currentUserKey = 'currentUser';  // New: Key for storing current user
+  static const String _currentUserKey = 'currentUser';  // Key for storing current user
 
   // Initialize the database: This is like setting up different drawers to store information
   static Future<void> initialize() async {
@@ -94,8 +98,6 @@ class UserDatabase {
     await Hive.openBox<CartItem>(_cartBoxName);
     await Hive.openBox<Category>(_categoryBoxName);
   }
-
-  // User-related methods
 
   // Hash the password: This scrambles the password so it's not stored as plain text
   // It's like using a secret code to protect the password
@@ -140,7 +142,7 @@ class UserDatabase {
     // Check if the password is correct
     final hashedPassword = _hashPassword(password);
     if (user.hashedPassword == hashedPassword) {
-      await setCurrentUser(username);  // New: Set the current user
+      await setCurrentUser(username);  // Set the current user
       return LoginResult.success;
     } else {
       return LoginResult.invalidPassword;
@@ -173,6 +175,7 @@ class UserDatabase {
     // Update the user's information
     existingUser.email = updatedUser.email;
     existingUser.hashedPassword = updatedUser.hashedPassword;
+    existingUser.profileImagePath = updatedUser.profileImagePath;  // New: Update profile image path
     await existingUser.save();  // Save the changes
     return true;  // Update successful
   }
@@ -190,7 +193,7 @@ class UserDatabase {
     return true;  // Deletion successful
   }
 
-  // New: Get the current user
+  // Get the current user
   static Future<User?> getCurrentUser() async {
     final String? currentUsername = await _getCurrentUsername();
     if (currentUsername != null) {
@@ -199,25 +202,25 @@ class UserDatabase {
     return null;
   }
 
-  // New: Helper method to get the current username
+  // Helper method to get the current username
   static Future<String?> _getCurrentUsername() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_currentUserKey);
   }
 
-  // New: Set the current user
+  // Set the current user
   static Future<void> setCurrentUser(String username) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentUserKey, username);
   }
 
-  // New: Clear the current user (used for logout)
+  // Clear the current user (used for logout)
   static Future<void> clearCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentUserKey);
   }
 
-  // New: Logout user
+  // Logout user
   static Future<void> logoutUser() async {
     await clearCurrentUser();
   }
@@ -408,7 +411,7 @@ class UserDatabase {
     return name.length > 3 && RegExp(r'^[a-zA-Z\s]+$').hasMatch(name);
   }
 
-  // New: Get the current user's cart
+  // Get the current user's cart
   static Future<List<CartItem>> getCurrentUserCart() async {
     User? currentUser = await getCurrentUser();
     if (currentUser != null) {
@@ -417,7 +420,7 @@ class UserDatabase {
     return [];  // Return an empty list if no user is logged in
   }
 
-  // New: Get the current user's favorite products
+  // Get the current user's favorite products
   static Future<List<Product>> getCurrentUserFavorites() async {
     User? currentUser = await getCurrentUser();
     if (currentUser != null) {
@@ -426,19 +429,19 @@ class UserDatabase {
     return [];  // Return an empty list if no user is logged in
   }
 
-  // New: Check if a user is logged in
+  // Check if a user is logged in
   static Future<bool> isUserLoggedIn() async {
     String? currentUsername = await _getCurrentUsername();
     return currentUsername != null;
   }
 
-  // New: Get the current user's email
+  // Get the current user's email
   static Future<String?> getCurrentUserEmail() async {
     User? currentUser = await getCurrentUser();
     return currentUser?.email;
   }
 
-  // New: Update the current user's email
+  // Update the current user's email
   static Future<bool> updateCurrentUserEmail(String newEmail) async {
     User? currentUser = await getCurrentUser();
     if (currentUser != null) {
@@ -448,7 +451,7 @@ class UserDatabase {
     return false;
   }
 
-  // New: Update the current user's password
+  // Update the current user's password
   static Future<bool> updateCurrentUserPassword(String oldPassword, String newPassword) async {
     User? currentUser = await getCurrentUser();
     if (currentUser != null) {
@@ -460,19 +463,19 @@ class UserDatabase {
     return false;
   }
 
-  // New: Get the total number of products
+  // Get the total number of products
   static int getTotalProductCount() {
     final box = Hive.box<Product>(_productBoxName);
     return box.length;
   }
 
-  // New: Get the total number of categories
+  // Get the total number of categories
   static int getTotalCategoryCount() {
     final box = Hive.box<Category>(_categoryBoxName);
     return box.length;
   }
 
-  // New: Search products by name
+  // Search products by name
   static List<Product> searchProducts(String query) {
     final box = Hive.box<Product>(_productBoxName);
     return box.values.where((product) => 
@@ -480,17 +483,33 @@ class UserDatabase {
     ).toList();
   }
 
-  // New: Get products sorted by price (ascending or descending)
+  // Get products sorted by price (ascending or descending)
   static List<Product> getProductsSortedByPrice({bool ascending = true}) {
     List<Product> products = getAllProducts();
     products.sort((a, b) => ascending ? a.price.compareTo(b.price) : b.price.compareTo(a.price));
     return products;
   }
 
-  // New: Get the most recent products
+  // Get the most recent products
   static List<Product> getMostRecentProducts({int limit = 10}) {
     List<Product> products = getAllProducts();
     products.sort((a, b) => b.key.compareTo(a.key));  // Assuming newer products have higher keys
     return products.take(limit).toList();
+  }
+
+  // New: Update the current user's profile image
+  static Future<bool> updateCurrentUserProfileImage(String imagePath) async {
+    User? currentUser = await getCurrentUser();
+    if (currentUser != null) {
+      currentUser.profileImagePath = imagePath;
+      return updateUser(currentUser);
+    }
+    return false;
+  }
+
+  // New: Get the current user's profile image path
+  static Future<String?> getCurrentUserProfileImagePath() async {
+    User? currentUser = await getCurrentUser();
+    return currentUser?.profileImagePath;
   }
 }

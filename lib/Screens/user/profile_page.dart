@@ -1,8 +1,11 @@
+import 'package:epoch/Screens/user/edit_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/Screens/user/home.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:epoch/Screens/userauth/login.dart';
+import 'package:epoch/Screens/user/edit_profile.dart'; // New import
+import 'dart:io'; // New import for File
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -12,6 +15,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String username = '';
   bool isLoading = true;
+  String? profileImagePath; // New variable to store profile image path
 
   @override
   void initState() {
@@ -27,6 +31,7 @@ class _ProfilePageState extends State<ProfilePage> {
     User? currentUser = await UserDatabase.getCurrentUser();
     setState(() {
       username = currentUser?.username ?? 'Guest';
+      profileImagePath = currentUser?.profileImagePath; // Load profile image path
       isLoading = false;
     });
   }
@@ -85,7 +90,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             CircleAvatar(
                               radius: 50,
                               backgroundColor: Colors.cyan,
-                              child: Icon(Icons.person, size: 50, color: Colors.grey[600]),
+                              backgroundImage: profileImagePath != null
+                                  ? FileImage(File(profileImagePath!))
+                                  : null,
+                              child: profileImagePath == null
+                                  ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+                                  : null,
                             ),
                             Positioned(
                               bottom: 0,
@@ -94,10 +104,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 backgroundColor: Color(0xFF013A09),
                                 child: IconButton(
                                   icon: Icon(Icons.edit, color: Colors.white),
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Edit profile functionality coming soon!')),
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => EditProfilePage()),
                                     );
+                                    if (result == true) {
+                                      _loadUserData(); // Reload user data if changes were made
+                                    }
                                   },
                                 ),
                               ),
