@@ -1,5 +1,6 @@
 import 'package:epoch/Screens/admin/addproduct.dart';
 import 'package:epoch/Screens/admin/admin_product_list.dart';
+import 'package:epoch/Screens/admin/add_category.dart'; // New import
 import 'package:epoch/Screens/admin_auth/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -47,6 +48,12 @@ class AdminHome extends StatelessWidget {
                   _buildButton(context, 'Add Product', () {
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => AddProduct()),
+                    );
+                  }),
+                  SizedBox(height: 20),
+                  _buildButton(context, 'Add Category', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => AddCategory()),
                     );
                   }),
                   SizedBox(height: 20),

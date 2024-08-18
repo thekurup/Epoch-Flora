@@ -60,6 +60,16 @@ class CartItem extends HiveObject {
   CartItem(this.product, this.quantity);
 }
 
+// New: Category class to represent product categories
+@HiveType(typeId: 3)  // This tells Hive how to store Category objects
+class Category extends HiveObject {
+  @HiveField(0)
+  late String name;
+
+  // Constructor: This is like creating a new category
+  Category(this.name);
+}
+
 // These are the possible results when a user tries to log in
 enum LoginResult {
   success,
@@ -67,18 +77,20 @@ enum LoginResult {
   invalidPassword,
 }
 
-// UserDatabase class: Handles all database operations for users, products, and cart
+// UserDatabase class: Handles all database operations for users, products, cart, and categories
 class UserDatabase {
   // These are like labels for different sections in our database
   static const String _userBoxName = 'users';
   static const String _productBoxName = 'products';
   static const String _cartBoxName = 'cart';
+  static const String _categoryBoxName = 'categories';  // New: Box for storing categories
 
   // Initialize the database: This is like setting up different drawers to store information
   static Future<void> initialize() async {
     await Hive.openBox<User>(_userBoxName);
     await Hive.openBox<Product>(_productBoxName);
     await Hive.openBox<CartItem>(_cartBoxName);
+    await Hive.openBox<Category>(_categoryBoxName);  // New: Open the categories box
   }
 
   // User-related methods
@@ -174,8 +186,7 @@ class UserDatabase {
     await user.delete();  // Delete the user
     return true;  // Deletion successful
   }
-
-
+  
 
   // Product-related methods
 
@@ -299,5 +310,67 @@ class UserDatabase {
   static double getCartTotal() {
     final cartItems = getCartItems();  // Get all items in the cart
     return cartItems.fold(0, (total, item) => total + (item.product.price * item.quantity));  // Calculate total price
+  }
+
+  // New: Category-related methods
+
+  // Add a new category: It's like creating a new section in an online store
+  static Future<bool> addCategory(String categoryName) async {
+    final box = Hive.box<Category>(_categoryBoxName);  // Open the 'categories' box
+    
+    // Check if the category already exists
+    if (box.values.any((category) => category.name.toLowerCase() == categoryName.toLowerCase())) {
+      return false;  // Category already exists
+    }
+
+    // Validate category name
+    if (!_isValidCategoryName(categoryName)) {
+      return false;  // Invalid category name
+    }
+
+    await box.add(Category(categoryName));  // Add the new category
+    return true;  // Category added successfully
+  }
+
+  // Update an existing category: It's like renaming a section in an online store
+  static Future<bool> updateCategory(int index, String newCategoryName) async {
+    final box = Hive.box<Category>(_categoryBoxName);  // Open the 'categories' box
+    
+    // Check if the new category name already exists (excluding the current category)
+    if (box.values.where((category) => box.keyAt(box.values.toList().indexOf(category)) != index)
+        .any((category) => category.name.toLowerCase() == newCategoryName.toLowerCase())) {
+      return false;  // Category name already exists
+    }
+
+    // Validate new category name
+    if (!_isValidCategoryName(newCategoryName)) {
+      return false;  // Invalid category name
+    }
+
+    final category = box.getAt(index);
+    if (category != null) {
+      category.name = newCategoryName;
+      await category.save();  // Save the changes
+      return true;  // Category updated successfully
+    }
+    return false;  // Category not found
+  }
+
+  // Delete a category: It's like removing a section from an online store
+  static Future<bool> deleteCategory(int index) async {
+    final box = Hive.box<Category>(_categoryBoxName);  // Open the 'categories' box
+    await box.deleteAt(index);  // Delete the category
+    return true;  // Category deleted successfully
+  }
+
+  // Get all categories: It's like viewing all sections in an online store
+ static List<Category> getAllCategories() {
+    final box = Hive.box<Category>(_categoryBoxName);  // Open the 'categories' box
+    return box.values.toList();  // Return all categories as a list
+  }
+
+  // Validate category name: It's like checking if a section name is appropriate for the store
+  static bool _isValidCategoryName(String name) {
+    return name.length > 3 && RegExp(r'^[a-zA-Z\s]+$').hasMatch(name);
   }
 }

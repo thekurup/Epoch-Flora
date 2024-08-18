@@ -22,6 +22,10 @@ void main() async {
   // Register the CartItemAdapter
   Hive.registerAdapter(CartItemAdapter());
   
+  // Register the CategoryAdapter
+  // This allows Hive to work with Category objects in the database
+  Hive.registerAdapter(CategoryAdapter());
+  
   // Initialize the UserDatabase
   await UserDatabase.initialize();
   

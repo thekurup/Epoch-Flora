@@ -36,8 +36,8 @@ class _EditProductState extends State<EditProduct> {
   // This is like a tool to pick images from the device
   final ImagePicker _picker = ImagePicker();
 
-  // This is like a list of options for the user to choose from for the category
-  List<String> _categories = ['Indoor Plant', 'Outdoor Plant', 'Flowering Plant'];
+  // New: This is now a dynamic list that will be populated from the database
+  List<String> _categories = [];
 
   // This is like a flag to check if the user has tried to submit the form
   bool _formSubmitted = false;
@@ -59,6 +59,20 @@ class _EditProductState extends State<EditProduct> {
     // This sets up a listener to count characters as the user types in the description
     _descriptionController.addListener(_updateDescriptionCharCount);
     _updateDescriptionCharCount();
+    // New: Load categories from the database
+    _loadCategories();
+  }
+
+  // New: This function loads categories from the database
+  void _loadCategories() {
+    final categories = UserDatabase.getAllCategories();
+    setState(() {
+      _categories = categories.map((category) => category.name).toList();
+      // If the product's category is not in the list, add it
+      if (!_categories.contains(_selectedCategory)) {
+        _categories.add(_selectedCategory!);
+      }
+    });
   }
 
   @override
@@ -230,6 +244,7 @@ class _EditProductState extends State<EditProduct> {
   }
 
   // This function builds the category dropdown
+  // Updated: Now uses the dynamic _categories list
   Widget _buildCategoryDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,21 +334,23 @@ class _EditProductState extends State<EditProduct> {
   }
 
   // This function validates the form and updates the product if everything is correct
+  // Updated: Now checks for a selected category
   void _validateAndUpdateProduct() {
     setState(() {
       _formSubmitted = true;
     });
 
-    if (_formKey.currentState!.validate() && _image != null) {
+    if (_formKey.currentState!.validate() && _image != null && _selectedCategory != null) {
       _updateProduct();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all fields correctly and select an image')),
+        SnackBar(content: Text('Please fill all fields correctly, select a category, and select an image')),
       );
     }
   }
 
   // This function updates the product in the database
+  // Updated: Now includes the selected category when creating the updated product
   Future<void> _updateProduct() async {
     try {
       String imagePath = widget.product.imagePath;
@@ -352,6 +369,7 @@ class _EditProductState extends State<EditProduct> {
         double.parse(_priceController.text),
         _selectedCategory!,
         imagePath,
+        isFavorite: widget.product.isFavorite,
       );
 
       // Use the updateProduct method from UserDatabase, passing both the key and the updated product

@@ -21,14 +21,24 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   List<Product> _allProducts = [];
   // This controller helps manage our tab bar, like a remote control for TV channels
   late TabController _tabController;
+  // New: This list will store all our categories
+  List<Category> _categories = [];
 
   @override
   // This function runs when the page is first created, like setting up a store before opening
   void initState() {
     super.initState();
+    _loadCategories();
     _loadProducts();
-    // We're creating a tab controller with 3 tabs, like setting up 3 sections in our store
-    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  // New: This function loads all categories from the database
+  void _loadCategories() {
+    setState(() {
+      _categories = UserDatabase.getAllCategories();
+      // Initialize the tab controller with the number of categories, or 1 if there are no categories
+      _tabController = TabController(length: _categories.isEmpty ? 1 : _categories.length, vsync: this);
+    });
   }
 
   @override
@@ -54,7 +64,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
   }
 
-    // This function handles logging out, like closing the store and going home
+  // This function handles logging out, like closing the store and going home
   void _logout() {
     showDialog(
       context: context,
@@ -97,7 +107,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-
   @override
   // This function builds what we see on the screen, like arranging items in our store
   Widget build(BuildContext context) {
@@ -132,37 +141,53 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
                       // This creates our tab bar, like section labels in our store
-                      TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        tabs: [
-                          Tab(text: 'Indoor Plant'),
-                          Tab(text: 'Outdoor Plant'),
-                          Tab(text: 'Flowering Plant'),
-                        ],
-                        labelStyle: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                        ),
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.white.withOpacity(0.7),
-                        indicatorColor: Colors.white,
-                        indicatorWeight: 3,
-                      ),
+                      _categories.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No categories available',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          : TabBar(
+                              controller: _tabController,
+                              isScrollable: true,
+                              tabs: _categories.map((Category category) {
+                                return Tab(text: category.name);
+                              }).toList(),
+                              labelStyle: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                              labelColor: Colors.white,
+                              unselectedLabelColor: Colors.white.withOpacity(0.7),
+                              indicatorColor: Colors.white,
+                              indicatorWeight: 3,
+                            ),
                     ],
                   ),
                 ),
               ),
               // This section displays our main content based on the selected tab
               Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    ProductList(category: 'Indoor Plant', onFavoriteToggle: _toggleFavorite),
-                    ProductList(category: 'Outdoor Plant', onFavoriteToggle: _toggleFavorite),
-                    ProductList(category: 'Flowering Plant', onFavoriteToggle: _toggleFavorite),
-                  ],
-                ),
+                child: _categories.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No products available',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                      )
+                    : TabBarView(
+                        controller: _tabController,
+                        children: _categories.map((Category category) {
+                          return ProductList(category: category.name, onFavoriteToggle: _toggleFavorite);
+                        }).toList(),
+                      ),
               ),
               // This section displays our latest products
               LatestProductsSection(onFavoriteToggle: _toggleFavorite),
@@ -185,6 +210,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
+// ... (rest of the code remains the same)
 // This class represents a list of products for a specific category
 class ProductList extends StatelessWidget {
   final String category;

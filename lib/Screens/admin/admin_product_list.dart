@@ -97,33 +97,32 @@ class ProductListItem extends StatelessWidget {
           ),
         ],
       ),
-      // This allows the content to be scrolled horizontally if it's too wide
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            // This displays the product image
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  File(product.imagePath),
-                  fit: BoxFit.cover,
-                  // If the image fails to load, we show a placeholder icon
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.image_not_supported, size: 60);
-                  },
-                ),
+      // This creates a row to hold all elements of the product item
+      child: Row(
+        children: [
+          // This displays the product image
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                File(product.imagePath),
+                fit: BoxFit.cover,
+                // If the image fails to load, we show a placeholder icon
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.image_not_supported, size: 60);
+                },
               ),
             ),
-            SizedBox(width: 16),
-            // This displays the product details
-            Column(
+          ),
+          SizedBox(width: 16),
+          // This displays the product details
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -152,22 +151,21 @@ class ProductListItem extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(width: 16),
-            // This creates the edit and delete buttons
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit, color: Color(0xFF013A09)),
-                  onPressed: onEdit,
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _showDeleteConfirmation(context),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+          // New: This creates the edit and delete buttons on the right side
+          Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit, color: Color(0xFF013A09)),
+                onPressed: onEdit,
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _showDeleteConfirmation(context),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

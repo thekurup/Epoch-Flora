@@ -33,8 +33,8 @@ class _AddProductState extends State<AddProduct> {
   // This is like getting a tool ready to pick images from the device
   final ImagePicker _picker = ImagePicker();
 
-  // This is like creating a list of options for the user to choose from
-  List<String> _categories = ['Indoor Plant', 'Outdoor Plant', 'Flowering Plant'];
+  // New: This is now an empty list that will be populated with categories from the database
+  List<Category> _categories = [];
 
   // This is like a flag to check if the user has tried to submit the form
   bool _formSubmitted = false;
@@ -48,6 +48,8 @@ class _AddProductState extends State<AddProduct> {
     super.initState();
     // This is like setting up a listener to count characters as the user types
     _descriptionController.addListener(_updateDescriptionCharCount);
+    // New: Load categories when the widget initializes
+    _loadCategories();
   }
 
   @override
@@ -64,6 +66,13 @@ class _AddProductState extends State<AddProduct> {
   void _updateDescriptionCharCount() {
     setState(() {
       _descriptionCharCount = _descriptionController.text.length;
+    });
+  }
+
+  // New: This function loads categories from the database
+  void _loadCategories() {
+    setState(() {
+      _categories = UserDatabase.getAllCategories();
     });
   }
 
@@ -219,36 +228,40 @@ class _AddProductState extends State<AddProduct> {
   }
 
   // This function builds the category dropdown
+  // Updated: Now handles cases where no categories are available
   Widget _buildCategoryDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Category', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: _selectedCategory,
-          hint: Text('Select Category'),
-          items: _categories.map((String category) {
-            return DropdownMenuItem<String>(
-              value: category,
-              child: Text(category),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedCategory = newValue;
-            });
-          },
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (_formSubmitted && value == null) {
-              return 'Please select a category';
-            }
-            return null;
-          },
-        ),
+        _categories.isEmpty
+            ? Text('No categories available. Please add categories first.',
+                style: TextStyle(color: Colors.red))
+            : DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                hint: Text('Select Category'),
+                items: _categories.map((Category category) {
+                  return DropdownMenuItem<String>(
+                    value: category.name,
+                    child: Text(category.name),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (_formSubmitted && value == null) {
+                    return 'Please select a category';
+                  }
+                  return null;
+                },
+              ),
       ],
     );
   }
@@ -313,7 +326,8 @@ class _AddProductState extends State<AddProduct> {
       _formSubmitted = true;
     });
 
-    if (_formKey.currentState!.validate() && _image != null) {
+    // Updated: Now checks if a category is selected
+    if (_formKey.currentState!.validate() && _image != null && _selectedCategory != null) {
       _saveProduct();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
