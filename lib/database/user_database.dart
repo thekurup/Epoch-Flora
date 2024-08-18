@@ -2,6 +2,7 @@
 import 'package:hive/hive.dart';  // Hive is a lightweight and fast database
 import 'package:crypto/crypto.dart';  // Used for password hashing
 import 'dart:convert';  // Provides encoding and decoding for JSON, UTF-8, and more
+import 'package:shared_preferences/shared_preferences.dart';  // New: Used for storing current user
 
 // This line is needed for Hive to generate TypeAdapters
 part 'user_database.g.dart';
@@ -60,7 +61,7 @@ class CartItem extends HiveObject {
   CartItem(this.product, this.quantity);
 }
 
-// New: Category class to represent product categories
+// Category class to represent product categories
 @HiveType(typeId: 3)  // This tells Hive how to store Category objects
 class Category extends HiveObject {
   @HiveField(0)
@@ -83,14 +84,15 @@ class UserDatabase {
   static const String _userBoxName = 'users';
   static const String _productBoxName = 'products';
   static const String _cartBoxName = 'cart';
-  static const String _categoryBoxName = 'categories';  // New: Box for storing categories
+  static const String _categoryBoxName = 'categories';
+  static const String _currentUserKey = 'currentUser';  // New: Key for storing current user
 
   // Initialize the database: This is like setting up different drawers to store information
   static Future<void> initialize() async {
     await Hive.openBox<User>(_userBoxName);
     await Hive.openBox<Product>(_productBoxName);
     await Hive.openBox<CartItem>(_cartBoxName);
-    await Hive.openBox<Category>(_categoryBoxName);  // New: Open the categories box
+    await Hive.openBox<Category>(_categoryBoxName);
   }
 
   // User-related methods
@@ -138,6 +140,7 @@ class UserDatabase {
     // Check if the password is correct
     final hashedPassword = _hashPassword(password);
     if (user.hashedPassword == hashedPassword) {
+      await setCurrentUser(username);  // New: Set the current user
       return LoginResult.success;
     } else {
       return LoginResult.invalidPassword;
@@ -186,7 +189,38 @@ class UserDatabase {
     await user.delete();  // Delete the user
     return true;  // Deletion successful
   }
-  
+
+  // New: Get the current user
+  static Future<User?> getCurrentUser() async {
+    final String? currentUsername = await _getCurrentUsername();
+    if (currentUsername != null) {
+      return getUser(currentUsername);
+    }
+    return null;
+  }
+
+  // New: Helper method to get the current username
+  static Future<String?> _getCurrentUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_currentUserKey);
+  }
+
+  // New: Set the current user
+  static Future<void> setCurrentUser(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_currentUserKey, username);
+  }
+
+  // New: Clear the current user (used for logout)
+  static Future<void> clearCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_currentUserKey);
+  }
+
+  // New: Logout user
+  static Future<void> logoutUser() async {
+    await clearCurrentUser();
+  }
 
   // Product-related methods
 
@@ -312,7 +346,7 @@ class UserDatabase {
     return cartItems.fold(0, (total, item) => total + (item.product.price * item.quantity));  // Calculate total price
   }
 
-  // New: Category-related methods
+  // Category-related methods
 
   // Add a new category: It's like creating a new section in an online store
   static Future<bool> addCategory(String categoryName) async {
@@ -364,7 +398,7 @@ class UserDatabase {
   }
 
   // Get all categories: It's like viewing all sections in an online store
- static List<Category> getAllCategories() {
+  static List<Category> getAllCategories() {
     final box = Hive.box<Category>(_categoryBoxName);  // Open the 'categories' box
     return box.values.toList();  // Return all categories as a list
   }
@@ -372,5 +406,91 @@ class UserDatabase {
   // Validate category name: It's like checking if a section name is appropriate for the store
   static bool _isValidCategoryName(String name) {
     return name.length > 3 && RegExp(r'^[a-zA-Z\s]+$').hasMatch(name);
+  }
+
+  // New: Get the current user's cart
+  static Future<List<CartItem>> getCurrentUserCart() async {
+    User? currentUser = await getCurrentUser();
+    if (currentUser != null) {
+      return getCartItems();
+    }
+    return [];  // Return an empty list if no user is logged in
+  }
+
+  // New: Get the current user's favorite products
+  static Future<List<Product>> getCurrentUserFavorites() async {
+    User? currentUser = await getCurrentUser();
+    if (currentUser != null) {
+      return getFavoriteProducts();
+    }
+    return [];  // Return an empty list if no user is logged in
+  }
+
+  // New: Check if a user is logged in
+  static Future<bool> isUserLoggedIn() async {
+    String? currentUsername = await _getCurrentUsername();
+    return currentUsername != null;
+  }
+
+  // New: Get the current user's email
+  static Future<String?> getCurrentUserEmail() async {
+    User? currentUser = await getCurrentUser();
+    return currentUser?.email;
+  }
+
+  // New: Update the current user's email
+  static Future<bool> updateCurrentUserEmail(String newEmail) async {
+    User? currentUser = await getCurrentUser();
+    if (currentUser != null) {
+      currentUser.email = newEmail;
+      return updateUser(currentUser);
+    }
+    return false;
+  }
+
+  // New: Update the current user's password
+  static Future<bool> updateCurrentUserPassword(String oldPassword, String newPassword) async {
+    User? currentUser = await getCurrentUser();
+    if (currentUser != null) {
+      if (currentUser.hashedPassword == _hashPassword(oldPassword)) {
+        currentUser.hashedPassword = _hashPassword(newPassword);
+        return updateUser(currentUser);
+      }
+    }
+    return false;
+  }
+
+  // New: Get the total number of products
+  static int getTotalProductCount() {
+    final box = Hive.box<Product>(_productBoxName);
+    return box.length;
+  }
+
+  // New: Get the total number of categories
+  static int getTotalCategoryCount() {
+    final box = Hive.box<Category>(_categoryBoxName);
+    return box.length;
+  }
+
+  // New: Search products by name
+  static List<Product> searchProducts(String query) {
+    final box = Hive.box<Product>(_productBoxName);
+    return box.values.where((product) => 
+      product.name.toLowerCase().contains(query.toLowerCase())
+    ).toList();
+  }
+
+  // New: Get products sorted by price (ascending or descending)
+  static List<Product> getProductsSortedByPrice({bool ascending = true}) {
+    List<Product> products = getAllProducts();
+    products.sort((a, b) => ascending ? a.price.compareTo(b.price) : b.price.compareTo(a.price));
+    return products;
+  }
+
+  // New: Get the most recent products
+  static List<Product> getMostRecentProducts({int limit = 10}) {
+    List<Product> products = getAllProducts();
+    products.sort((a, b) => b.key.compareTo(a.key));  // Assuming newer products have higher keys
+    return products.take(limit).toList();
   }
 }
