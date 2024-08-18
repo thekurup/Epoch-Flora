@@ -4,14 +4,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:epoch/database/user_database.dart';
-import 'package:epoch/Screens/admin/edit_product.dart'; // Add this import
+import 'package:epoch/Screens/admin/edit_product.dart'; // This line imports the EditProduct screen
 
+// This class represents the admin's product list page
 class AdminProductList extends StatelessWidget {
   const AdminProductList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // This creates the top bar of our page
       appBar: AppBar(
         title: Text(
           'Product List',
@@ -21,26 +23,34 @@ class AdminProductList extends StatelessWidget {
           ),
         ),
         backgroundColor: Color(0xFF013A09),
+        // This adds a back button to the app bar
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
+      // This creates the main content of our page
       body: ValueListenableBuilder(
+        // This line sets up a listener for changes in the products box
         valueListenable: Hive.box<Product>('products').listenable(),
         builder: (context, Box<Product> box, _) {
+          // If there are no products, we show a message
           if (box.values.isEmpty) {
             return Center(child: Text('No products available'));
           }
+          // If there are products, we create a scrollable list
           return ListView.builder(
             itemCount: box.values.length,
             itemBuilder: (context, index) {
               final product = box.values.elementAt(index);
+              // For each product, we create a ProductListItem
               return ProductListItem(
                 product: product,
+                // This function is called when the delete button is pressed
                 onDelete: () async {
                   await UserDatabase.deleteProduct(product.key);
                 },
+                // This function is called when the edit button is pressed
                 onEdit: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -57,6 +67,7 @@ class AdminProductList extends StatelessWidget {
   }
 }
 
+// This class represents each individual product item in the list
 class ProductListItem extends StatelessWidget {
   final Product product;
   final VoidCallback onDelete;
@@ -71,6 +82,7 @@ class ProductListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // This creates a container for each product item
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       padding: EdgeInsets.all(16),
@@ -85,10 +97,12 @@ class ProductListItem extends StatelessWidget {
           ),
         ],
       ),
+      // This allows the content to be scrolled horizontally if it's too wide
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            // This displays the product image
             Container(
               width: 60,
               height: 60,
@@ -100,6 +114,7 @@ class ProductListItem extends StatelessWidget {
                 child: Image.file(
                   File(product.imagePath),
                   fit: BoxFit.cover,
+                  // If the image fails to load, we show a placeholder icon
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(Icons.image_not_supported, size: 60);
                   },
@@ -107,6 +122,7 @@ class ProductListItem extends StatelessWidget {
               ),
             ),
             SizedBox(width: 16),
+            // This displays the product details
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -137,6 +153,7 @@ class ProductListItem extends StatelessWidget {
               ],
             ),
             SizedBox(width: 16),
+            // This creates the edit and delete buttons
             Row(
               children: [
                 IconButton(
@@ -155,6 +172,7 @@ class ProductListItem extends StatelessWidget {
     );
   }
 
+  // This function shows a confirmation dialog when trying to delete a product
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
       context: context,

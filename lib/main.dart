@@ -46,10 +46,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SplashScreen(),
-      // You can add routes here if needed
-      // routes: {
-      //   '/home': (context) => HomeScreen(),
-      // },
+      
     );
   }
 }
