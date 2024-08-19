@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
 
@@ -52,13 +53,14 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Phone Number'),
-                  keyboardType: TextInputType.phone,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a phone number';
                     }
-                    if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                      return 'Phone number should be 10 digits';
+                    if (value.length != 10) {
+                      return 'Phone number must be exactly 10 digits';
                     }
                     return null;
                   },
@@ -100,12 +102,13 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'ZIP Code'),
                   keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a ZIP code';
                     }
-                    if (!RegExp(r'^\d{5}(\d{1})?$').hasMatch(value)) {
-                      return 'ZIP code should be 5 or 6 digits';
+                    if (value.length != 6) {
+                      return 'ZIP code must be exactly 6 digits';
                     }
                     return null;
                   },

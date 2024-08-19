@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:epoch/Screens/user/add_address.dart';
+import 'package:epoch/Screens/user/edit_address.dart';
 // TODO: Uncomment when ConfirmOrderPage is implemented
 // import 'package:epoch/Screens/user/confirm_order_page.dart';
 
@@ -14,6 +15,8 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
   Address? selectedAddress;
   late AnimationController _controller;
   late Animation<double> _animation;
+  List<Address> homeAddresses = [];
+  List<Address> workAddresses = [];
 
   @override
   void initState() {
@@ -26,6 +29,14 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
       parent: _controller,
       curve: Curves.easeInOut,
     );
+    _loadAddresses();
+  }
+
+  void _loadAddresses() {
+    setState(() {
+      homeAddresses = UserDatabase.getAddressesByType('Home');
+      workAddresses = UserDatabase.getAddressesByType('Work');
+    });
   }
 
   @override
@@ -45,12 +56,53 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
     });
   }
 
+  void _onEditAddress(Address address) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditAddressPage(address: address)),
+    );
+
+    if (result == true) {
+      // Address was successfully updated, refresh the address list
+      _loadAddresses();
+    }
+  }
+
+  void _onDeleteAddress(Address address) async {
+    // Show a confirmation dialog
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Address'),
+          content: Text('Are you sure you want to delete this address?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      setState(() {
+        UserDatabase.deleteAddress(address);
+        _loadAddresses();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        
         title: Text('Select Address', 
           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)
         ),
@@ -68,66 +120,63 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
         child: SafeArea(
           child: Container(
             color: Colors.black.withOpacity(0.5),
-            child: Stack(
+            child: Column(
               children: [
-                Column(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AddressSection(
-                              title: 'Home Address',
-                              addresses: UserDatabase.getAddressesByType('Home'),
-                              icon: Icons.home,
-                              onAddressSelected: _onAddressSelected,
-                              selectedAddress: selectedAddress,
-                            ),
-                            SizedBox(height: 20),
-                            AddressSection(
-                              title: 'Work Address',
-                              addresses: UserDatabase.getAddressesByType('Work'),
-                              icon: Icons.work,
-                              onAddressSelected: _onAddressSelected,
-                              selectedAddress: selectedAddress,
-                            ),
-                          ],
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: Column(
+                      children: [
+                        AddressSection(
+                          title: 'Home Address',
+                          addresses: homeAddresses,
+                          icon: Icons.home,
+                          onAddressSelected: _onAddressSelected,
+                          selectedAddress: selectedAddress,
+                          onEditAddress: _onEditAddress,
+                          onDeleteAddress: _onDeleteAddress,
                         ),
-                      ),
-                    ),
-                    AddAddressButton(
-                      onAddressAdded: () {
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-                Positioned(
-                  right: 16,
-                  bottom: 80,
-                  child: ScaleTransition(
-                    scale: _animation,
-                    child: FloatingActionButton.extended(
-                      onPressed: () {
-                        // TODO: Navigate to ConfirmOrderPage
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) => ConfirmOrderPage(selectedAddress: selectedAddress!)),
-                        // );
-                      },
-                      label: Text('Next', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                      icon: Icon(Icons.arrow_forward),
-                      backgroundColor: Colors.green,
+                        SizedBox(height: 20),
+                        AddressSection(
+                          title: 'Work Address',
+                          addresses: workAddresses,
+                          icon: Icons.work,
+                          onAddressSelected: _onAddressSelected,
+                          selectedAddress: selectedAddress,
+                          onEditAddress: _onEditAddress,
+                          onDeleteAddress: _onDeleteAddress,
+                        ),
+                      ],
                     ),
                   ),
                 ),
+                AddAddressButton(
+                  onAddressAdded: () {
+                    _loadAddresses();
+                  },
+                ),
+                SizedBox(height: 80), // Space for the "Next" button
               ],
             ),
           ),
         ),
       ),
+      floatingActionButton: ScaleTransition(
+        scale: _animation,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            // TODO: Navigate to ConfirmOrderPage
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => ConfirmOrderPage(selectedAddress: selectedAddress!)),
+            // );
+          },
+          label: Text('Next', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          icon: Icon(Icons.arrow_forward),
+          backgroundColor: Colors.green,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
@@ -138,6 +187,8 @@ class AddressSection extends StatelessWidget {
   final IconData icon;
   final Function(Address) onAddressSelected;
   final Address? selectedAddress;
+  final Function(Address) onEditAddress;
+  final Function(Address) onDeleteAddress;
 
   const AddressSection({
     Key? key,
@@ -146,62 +197,71 @@ class AddressSection extends StatelessWidget {
     required this.icon,
     required this.onAddressSelected,
     required this.selectedAddress,
+    required this.onEditAddress,
+    required this.onDeleteAddress,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Colors.green),
-              SizedBox(width: 8),
-              Text(
-                title,
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          addresses.isEmpty
-              ? Text('No address added', style: GoogleFonts.poppins(color: Colors.grey))
-              : Container(
-                  height: 200, // Fixed height for two address cards
-                  child: ListView.builder(
-                    itemCount: addresses.length,
-                    itemBuilder: (context, index) {
-                      return AddressCard(
-                        address: addresses[index],
-                        isSelected: addresses[index] == selectedAddress,
-                        onTap: () => onAddressSelected(addresses[index]),
-                      );
-                    },
-                  ),
+    return Expanded(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Colors.green),
+                SizedBox(width: 8),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-        ],
+              ],
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: addresses.isEmpty
+                  ? Center(child: Text('No address added', style: GoogleFonts.poppins(color: Colors.grey)))
+                  : ListView.builder(
+                      itemCount: addresses.length,
+                      itemBuilder: (context, index) {
+                        return AddressCardWithIcons(
+                          address: addresses[index],
+                          isSelected: addresses[index] == selectedAddress,
+                          onTap: () => onAddressSelected(addresses[index]),
+                          onEdit: () => onEditAddress(addresses[index]),
+                          onDelete: () => onDeleteAddress(addresses[index]),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class AddressCard extends StatelessWidget {
+class AddressCardWithIcons extends StatelessWidget {
   final Address address;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const AddressCard({
+  const AddressCardWithIcons({
     Key? key,
     required this.address,
     required this.isSelected,
     required this.onTap,
+    required this.onEdit,
+    required this.onDelete,
   }) : super(key: key);
 
   @override
@@ -210,22 +270,46 @@ class AddressCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 95, // Fixed height to ensure two cards fit in the 200-pixel container
         margin: EdgeInsets.only(bottom: 8),
         padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
           border: Border.all(color: isSelected ? Colors.green : Colors.grey.shade300, width: 2),
           borderRadius: BorderRadius.circular(8),
-          color: Colors.grey[100],
+          color: Colors.white.withOpacity(0.5),
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(address.name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-            Text(address.phone, style: GoogleFonts.poppins(fontSize: 12)),
-            Text('${address.street}, ${address.city}', style: GoogleFonts.poppins(fontSize: 12)),
-            Text('${address.state} ${address.zipCode}', style: GoogleFonts.poppins(fontSize: 12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(address.name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                  Text(address.phone, style: GoogleFonts.poppins(fontSize: 12)),
+                  Text('${address.street}, ${address.city}', style: GoogleFonts.poppins(fontSize: 12)),
+                  Text('${address.state} ${address.zipCode}', style: GoogleFonts.poppins(fontSize: 12)),
+                ],
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit, color: Colors.blue, size: 20),
+                  onPressed: onEdit,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                ),
+                SizedBox(height: 8),
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red, size: 20),
+                  onPressed: onDelete,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                ),
+              ],
+            ),
           ],
         ),
       ),
