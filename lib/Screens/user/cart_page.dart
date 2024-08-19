@@ -1,4 +1,5 @@
 // Import necessary packages and files
+import 'package:epoch/Screens/user/address_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/Screens/user/home.dart';
@@ -388,7 +389,7 @@ class CheckoutButton extends StatelessWidget {
         ),
         // This is where we'd handle what happens
         onPressed: () {
-          // Implement checkout logic
+          Navigator.push(context,MaterialPageRoute(builder:(context) => AddressPage()),);
         },
       ),
     );

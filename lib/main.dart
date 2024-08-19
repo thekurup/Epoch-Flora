@@ -26,6 +26,10 @@ void main() async {
   // This allows Hive to work with Category objects in the database
   Hive.registerAdapter(CategoryAdapter());
   
+  // New: Register the AddressAdapter
+  // This allows Hive to work with Address objects in the database
+  Hive.registerAdapter(AddressAdapter());
+  
   // Initialize the UserDatabase
   await UserDatabase.initialize();
   
@@ -50,7 +54,6 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SplashScreen(),
-      
     );
   }
 }

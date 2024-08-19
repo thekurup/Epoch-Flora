@@ -75,6 +75,37 @@ class Category extends HiveObject {
   Category(this.name);
 }
 
+// New: Address class to represent user addresses
+@HiveType(typeId: 4)  // This tells Hive how to store Address objects
+class Address extends HiveObject {
+  @HiveField(0)
+  late String name;
+
+  @HiveField(1)
+  late String phone;
+
+  @HiveField(2)
+  late String street;
+
+  @HiveField(3)
+  late String city;
+
+  @HiveField(4)
+  late String state;
+
+  @HiveField(5)
+  late String zipCode;
+
+  @HiveField(6)
+  late String type;  // 'Home' or 'Work'
+
+  @HiveField(7)
+  late bool isBillingAddress;
+
+  // Constructor: This is like filling out an address form
+  Address(this.name, this.phone, this.street, this.city, this.state, this.zipCode, this.type, this.isBillingAddress);
+}
+
 // These are the possible results when a user tries to log in
 enum LoginResult {
   success,
@@ -90,6 +121,7 @@ class UserDatabase {
   static const String _cartBoxName = 'cart';
   static const String _categoryBoxName = 'categories';
   static const String _currentUserKey = 'currentUser';  // Key for storing current user
+  static const String _addressBoxName = 'addresses';  // New: Key for storing addresses
 
   // Initialize the database: This is like setting up different drawers to store information
   static Future<void> initialize() async {
@@ -97,6 +129,7 @@ class UserDatabase {
     await Hive.openBox<Product>(_productBoxName);
     await Hive.openBox<CartItem>(_cartBoxName);
     await Hive.openBox<Category>(_categoryBoxName);
+    await Hive.openBox<Address>(_addressBoxName);  // New: Open the 'addresses' box
   }
 
   // Hash the password: This scrambles the password so it's not stored as plain text
@@ -343,7 +376,7 @@ class UserDatabase {
     await box.clear();  // Remove all items from the cart
   }
 
-  // Get cart total: It's like seeing the total price at checkout
+ // Get cart total: It's like seeing the total price at checkout
   static double getCartTotal() {
     final cartItems = getCartItems();  // Get all items in the cart
     return cartItems.fold(0, (total, item) => total + (item.product.price * item.quantity));  // Calculate total price
@@ -497,7 +530,7 @@ class UserDatabase {
     return products.take(limit).toList();
   }
 
-  // New: Update the current user's profile image
+  // Update the current user's profile image
   static Future<bool> updateCurrentUserProfileImage(String imagePath) async {
     User? currentUser = await getCurrentUser();
     if (currentUser != null) {
@@ -507,9 +540,62 @@ class UserDatabase {
     return false;
   }
 
-  // New: Get the current user's profile image path
+  // Get the current user's profile image path
   static Future<String?> getCurrentUserProfileImagePath() async {
     User? currentUser = await getCurrentUser();
     return currentUser?.profileImagePath;
+  }
+
+  // New: Add an address for the current user
+  static Future<bool> addAddress(Address address) async {
+    final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
+    await box.add(address);  // Add the new address
+    return true;  // Address added successfully
+  }
+
+  // New: Get all addresses for the current user
+  static List<Address> getAddresses() {
+    final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
+    return box.values.toList();  // Return all addresses as a list
+  }
+
+  // New: Update an existing address
+  static Future<bool> updateAddress(Address updatedAddress) async {
+    await updatedAddress.save();  // Save the changes to the address
+    return true;  // Address updated successfully
+  }
+
+  // New: Delete an address
+  static Future<bool> deleteAddress(Address address) async {
+    await address.delete();  // Delete the address
+    return true;  // Address deleted successfully
+  }
+
+  // New: Get addresses by type (Home or Work)
+  static List<Address> getAddressesByType(String type) {
+    final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
+    return box.values.where((address) => address.type == type).toList();  // Return filtered addresses
+  }
+
+  // New: Get the billing address
+  static Address? getBillingAddress() {
+    final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
+    try {
+      return box.values.firstWhere(
+        (address) => address.isBillingAddress,
+      );  // Return the billing address
+    } catch (e) {
+      return null;  // Return null if no billing address is found
+    }
+  }
+
+  // New: Set an address as the billing address
+  static Future<bool> setBillingAddress(Address address) async {
+    final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
+    for (var addr in box.values) {
+      addr.isBillingAddress = (addr == address);
+      await addr.save();  // Save the changes
+    }
+    return true;  // Billing address set successfully
   }
 }

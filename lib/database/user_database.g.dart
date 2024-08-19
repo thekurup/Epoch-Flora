@@ -21,12 +21,11 @@ class UserAdapter extends TypeAdapter<User> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     // Create and return a new User object with the read data
-    // New: Added profileImagePath to the User constructor
     return User(
       fields[0] as String,  // username
       fields[1] as String,  // email
       fields[2] as String,  // hashedPassword
-      profileImagePath: fields[3] as String?,  // New: Read profileImagePath
+      profileImagePath: fields[3] as String?,  // Read profileImagePath
     );
   }
 
@@ -35,7 +34,7 @@ class UserAdapter extends TypeAdapter<User> {
   // It's like packing a box with user information
   void write(BinaryWriter writer, User obj) {
     writer
-      ..writeByte(4)  // New: Write that User now has 4 fields
+      ..writeByte(4)  // Write that User now has 4 fields
       ..writeByte(0)
       ..write(obj.username)  // Write username
       ..writeByte(1)
@@ -43,7 +42,7 @@ class UserAdapter extends TypeAdapter<User> {
       ..writeByte(2)
       ..write(obj.hashedPassword)  // Write hashedPassword
       ..writeByte(3)
-      ..write(obj.profileImagePath);  // New: Write profileImagePath
+      ..write(obj.profileImagePath);  // Write profileImagePath
   }
 
   @override
@@ -201,6 +200,70 @@ class CategoryAdapter extends TypeAdapter<Category> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is CategoryAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+// New: This class helps Hive understand how to save and load Address objects
+class AddressAdapter extends TypeAdapter<Address> {
+  @override
+  final int typeId = 4;  // This is like a unique ID for the Address class
+
+  @override
+  // This method reads an Address object from the database
+  // It's like unpacking a box containing address information
+  Address read(BinaryReader reader) {
+    final numOfFields = reader.readByte();  // Read how many fields the Address has
+    final fields = <int, dynamic>{
+      // Read each field and store it in a map
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    // Create and return a new Address object with the read data
+    return Address(
+      fields[0] as String,  // name
+      fields[1] as String,  // phone
+      fields[2] as String,  // street
+      fields[3] as String,  // city
+      fields[4] as String,  // state
+      fields[5] as String,  // zipCode
+      fields[6] as String,  // type
+      fields[7] as bool,    // isBillingAddress
+    );
+  }
+
+  @override
+  // This method writes an Address object to the database
+  // It's like packing a box with address information
+  void write(BinaryWriter writer, Address obj) {
+    writer
+      ..writeByte(8)  // Write that Address has 8 fields
+      ..writeByte(0)
+      ..write(obj.name)  // Write name
+      ..writeByte(1)
+      ..write(obj.phone)  // Write phone
+      ..writeByte(2)
+      ..write(obj.street)  // Write street
+      ..writeByte(3)
+      ..write(obj.city)  // Write city
+      ..writeByte(4)
+      ..write(obj.state)  // Write state
+      ..writeByte(5)
+      ..write(obj.zipCode)  // Write zipCode
+      ..writeByte(6)
+      ..write(obj.type)  // Write type
+      ..writeByte(7)
+      ..write(obj.isBillingAddress);  // Write isBillingAddress
+  }
+
+  @override
+  // These methods help Hive compare AddressAdapter objects
+  // They're like checking if two robot assistants are the same
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AddressAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
