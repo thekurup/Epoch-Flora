@@ -268,7 +268,7 @@ class AddressAdapter extends TypeAdapter<Address> {
           typeId == other.typeId;
 }
 
-// New: This class helps Hive understand how to save and load Order objects
+// This class helps Hive understand how to save and load Order objects
 class OrderAdapter extends TypeAdapter<Order> {
   @override
   final int typeId = 5;  // This is like a unique ID for the Order class
@@ -291,6 +291,7 @@ class OrderAdapter extends TypeAdapter<Order> {
       date: fields[4] as DateTime,
       imageUrl: fields[5] as String,
       quantity: fields[6] as int,
+      deliveryPrice: fields[7] as double,  // New: Read the delivery price
     );
   }
 
@@ -299,7 +300,7 @@ class OrderAdapter extends TypeAdapter<Order> {
   // It's like packing a box with order information
   void write(BinaryWriter writer, Order obj) {
     writer
-      ..writeByte(7)  // Write that Order has 7 fields
+      ..writeByte(8)  // New: Write that Order now has 8 fields
       ..writeByte(0)
       ..write(obj.id)  // Write id
       ..writeByte(1)
@@ -313,7 +314,9 @@ class OrderAdapter extends TypeAdapter<Order> {
       ..writeByte(5)
       ..write(obj.imageUrl)  // Write imageUrl
       ..writeByte(6)
-      ..write(obj.quantity);  // Write quantity
+      ..write(obj.quantity)  // Write quantity
+      ..writeByte(7)
+      ..write(obj.deliveryPrice);  // New: Write the delivery price
   }
 
   @override

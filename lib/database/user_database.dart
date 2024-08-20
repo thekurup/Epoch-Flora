@@ -105,7 +105,7 @@ class Address extends HiveObject {
   Address(this.name, this.phone, this.street, this.city, this.state, this.zipCode, this.type, this.isBillingAddress);
 }
 
-// New: Order class to represent user orders
+// Order class to represent user orders
 @HiveType(typeId: 5)  // This tells Hive how to store Order objects
 class Order extends HiveObject {
   @HiveField(0)
@@ -128,7 +128,9 @@ class Order extends HiveObject {
 
   @HiveField(6)
   late int quantity;
-  
+
+  @HiveField(7)  // Field for delivery price
+  late double deliveryPrice;
 
   // Constructor: This is like creating a new order
   Order({
@@ -139,6 +141,7 @@ class Order extends HiveObject {
     required this.date,
     required this.imageUrl,
     required this.quantity,
+    required this.deliveryPrice,
   });
 }
 
@@ -158,7 +161,7 @@ class UserDatabase {
   static const String _categoryBoxName = 'categories';
   static const String _currentUserKey = 'currentUser';  // Key for storing current user
   static const String _addressBoxName = 'addresses';  // Key for storing addresses
-  static const String _orderBoxName = 'orders';  // New: Key for storing orders
+  static const String _orderBoxName = 'orders';  // Key for storing orders
 
   // Initialize the database: This is like setting up different drawers to store information
   static Future<void> initialize() async {
@@ -167,7 +170,7 @@ class UserDatabase {
     await Hive.openBox<CartItem>(_cartBoxName);
     await Hive.openBox<Category>(_categoryBoxName);
     await Hive.openBox<Address>(_addressBoxName);
-    await Hive.openBox<Order>(_orderBoxName);  // New: Open the 'orders' box
+    await Hive.openBox<Order>(_orderBoxName);
   }
 
   // Hash the password: This scrambles the password so it's not stored as plain text
@@ -391,8 +394,7 @@ class UserDatabase {
   static Future<void> updateCartItem(CartItem item) async {
     await item.save();  // Save the changes to the cart item
   }
-
-  // Remove from cart: It's like clicking "Remove" on an item in your cart
+// Remove from cart: It's like clicking "Remove" on an item in your cart
   static Future<bool> removeFromCart(Product product) async {
     final box = Hive.box<CartItem>(_cartBoxName);  // Open the 'cart' box
     try {
@@ -537,21 +539,23 @@ class UserDatabase {
     return true;  // Billing address set successfully
   }
 
-  // New: Order-related methods
+  // Order-related methods
 
-  // New: Save an order
+  // Save an order
   static Future<void> saveOrder(Order order) async {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     await box.add(order);  // Add the new order
   }
 
-  // New: Get all orders for the current user
+  // Get all orders for the current user
+  // Updated: Now excludes canceled orders
   static Future<List<Order>> getOrders() async {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
-    return box.values.toList().reversed.toList();  // Return all orders in reverse chronological order
+    // New: Filter out canceled orders
+    return box.values.where((order) => order.status != 'Canceled').toList().reversed.toList();
   }
 
- // New: Get order by ID
+  // Get order by ID
   static Future<Order?> getOrderById(String orderId) async {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     try {
@@ -561,7 +565,8 @@ class UserDatabase {
       return null;
     }
   }
-  // New: Update order status
+
+  // Update order status
   static Future<bool> updateOrderStatus(String orderId, String newStatus) async {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     final order = await getOrderById(orderId);
@@ -573,7 +578,7 @@ class UserDatabase {
     return false;  // Order not found
   }
 
-  // New: Delete an order
+  // Delete an order
   static Future<bool> deleteOrder(String orderId) async {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     final order = await getOrderById(orderId);
@@ -584,21 +589,49 @@ class UserDatabase {
     return false;  // Order not found
   }
 
-  // New: Get orders by status
+  // Get orders by status
   static List<Order> getOrdersByStatus(String status) {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     return box.values.where((order) => order.status == status).toList();
   }
 
-  // New: Get total number of orders
+  // Get total number of orders
   static int getTotalOrderCount() {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     return box.length;
   }
 
-  // New: Get total revenue from all orders
+  // Get total revenue from all orders
   static double getTotalRevenue() {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     return box.values.fold(0, (total, order) => total + (order.price * order.quantity));
+  }
+
+  // Updated: Remove an order (now updates status to 'Canceled' instead of deleting)
+  // This method updates an order's status to 'Canceled' in the database
+  static Future<bool> removeOrder(String orderId) async {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    
+    // Find the order with the given ID
+    final orderToUpdate = box.values.cast<Order?>().firstWhere(
+      (order) => order?.id == orderId,
+      orElse: () => null,
+    );
+
+    // If the order is found, update its status to 'Canceled'
+    if (orderToUpdate != null) {
+      orderToUpdate.status = 'Canceled';  // Update the status instead of deleting
+      await orderToUpdate.save();  // Save the changes
+      return true;  // Update successful
+    }
+    
+    return false;  // Order not found
+  }
+
+  // New: Get canceled orders
+  // This method retrieves all orders with 'Canceled' status
+  static List<Order> getCanceledOrders() {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    return box.values.where((order) => order.status == 'Canceled').toList();
   }
 }

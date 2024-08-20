@@ -21,8 +21,6 @@ class OrderSuccessPage extends StatefulWidget {
 }
 
 class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProviderStateMixin {
-
-  
   late AnimationController _controller;
   // AnimationController: Controls the animation that plays when the page is displayed.
 
@@ -31,7 +29,7 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
     super.initState();
     _controller = AnimationController(
       // _controller: Sets up the animation to last for 3 seconds.
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 4),
       // _controller.forward(): Starts the animation.
       vsync: this,
     );
@@ -54,9 +52,12 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
     });
   }
 
-// Saves each ordered item to the database
+  // Saves each ordered item to the database
   void _saveOrder() async {
     try {
+      // Calculate delivery price (you may need to adjust this based on your business logic)
+      double deliveryPrice = widget.totalPrice >= 1200 ? 0 : 80; // Example: Free delivery for orders over 1200, otherwise 80
+
       for (var item in widget.orderedItems) {
         final order = Order(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -66,6 +67,7 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
           date: DateTime.now(),
           imageUrl: item.product.imagePath,
           quantity: item.quantity,
+          deliveryPrice: deliveryPrice, // Added deliveryPrice
         );
         await UserDatabase.saveOrder(order);
         print('Saved order: ${order.id} - ${order.productName}');
@@ -81,8 +83,8 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
     _controller.dispose();
     super.dispose();
   }
-//   Cleans up the animation controller when the widget is removed from the widget tree.
-// _controller.dispose(): Disposes of the animation controller to free up resources.
+  // Cleans up the animation controller when the widget is removed from the widget tree.
+  // _controller.dispose(): Disposes of the animation controller to free up resources.
 
   @override
   Widget build(BuildContext context) {

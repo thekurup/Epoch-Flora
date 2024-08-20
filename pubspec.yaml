@@ -103,6 +103,7 @@ flutter:
     - assets/images/delivery.jpg
     - assets/images/cash.jpg
     - assets/animations/order_success.json
+    - assets/animations/cancel_order.json
 
     
 

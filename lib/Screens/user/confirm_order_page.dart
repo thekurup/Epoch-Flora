@@ -44,16 +44,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/confirm_order_bg.jpg'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.1),
-              BlendMode.dstATop,
-            ),
-          ),
-        ),
+        
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),

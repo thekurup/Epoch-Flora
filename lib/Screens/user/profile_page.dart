@@ -1,5 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 
+import 'package:epoch/Screens/user/cancel_order_page.dart';
 import 'package:epoch/Screens/user/edit_profile.dart';
 import 'package:epoch/Screens/user/my_orders_page.dart';
 import 'package:flutter/material.dart';
@@ -145,14 +146,15 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                         SizedBox(height: 20),
                         ProfileButton(
-                          icon: Icons.cancel,
-                          text: 'Canceled Orders',
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Canceled Orders functionality coming soon!')),
-                            );
-                          },
-                        ),
+                              icon: Icons.cancel,
+                              text: 'Canceled Orders',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => CancelOrderPage()),
+                                );
+                              },
+                            ),
                         SizedBox(height: 20),
                         ProfileButton(
                           icon: Icons.logout,

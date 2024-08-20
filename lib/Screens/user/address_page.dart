@@ -11,27 +11,19 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> with SingleTickerProviderStateMixin {
-  // with SingleTickerProviderStateMixin: Allows the use of animation controllers
   Address? selectedAddress;
-  // Stores the currently selected address.
   late AnimationController _controller;
-  // Defines an animation controller for animations.
   late Animation<double> _animation;
-  // Defines the animation used with the controller.
   List<Address> homeAddresses = [];
-  // Holds the list of home addresses.
   List<Address> workAddresses = [];
-  // Holds the list of work addresses.
 
   @override
   void initState() {
-    // Initializes the state when the widget is created
     super.initState();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    // Creates an animation controller that lasts for 300 milliseconds.
     _animation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -40,12 +32,10 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
   }
 
   void _loadAddresses() {
-    // Method to load addresses from the database.
     setState(() {
       homeAddresses = UserDatabase.getAddressesByType('Home');
       workAddresses = UserDatabase.getAddressesByType('Work');
     });
-    // Updates the state with the loaded addresses, triggering a UI rebuild.
   }
 
   @override
@@ -53,11 +43,8 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
     _controller.dispose();
     super.dispose();
   }
-  // Disposes of the animation controller to free up resources.
-
 
   void _onAddressSelected(Address address) {
-    // void _onAddressSelected(Address address): Called when an address is selected.
     setState(() {
       selectedAddress = address;
       if (selectedAddress != null) {
@@ -65,7 +52,6 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
       } else {
         _controller.reverse();
       }
-      // Updates the state with the selected address and animates the change.
     });
   }
 
@@ -74,20 +60,12 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
       context,
       MaterialPageRoute(builder: (context) => EditAddressPage(address: address)),
     );
-    // void _onEditAddress(Address address) async: Navigates to the edit address page and waits for the result.
-
-// if (result == true): If the address was successfully updated, reload the address list.
     if (result == true) {
-      // Address was successfully updated, refresh the address list
       _loadAddresses();
     }
   }
 
-// void _onDeleteAddress(Address address) async: Shows a confirmation dialog for deleting an address.
   void _onDeleteAddress(Address address) async {
-    // Show a confirmation dialog
-
-    // await showDialog(...): Displays a dialog asking for confirmation.
     bool confirmDelete = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -108,7 +86,6 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
       },
     );
     
-// if (confirmDelete == true): If confirmed, deletes the address and reloads the list.
     if (confirmDelete == true) {
       setState(() {
         UserDatabase.deleteAddress(address);
@@ -120,63 +97,53 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('Select Address', 
           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)
         ),
         backgroundColor: Colors.green,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/delivery.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
+        color: Colors.green.shade50, // Light green background
         child: SafeArea(
-          child: Container(
-            color: Colors.black.withOpacity(0.5),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    child: Column(
-                      children: [
-                        AddressSection(
-                          title: 'Home Address',
-                          addresses: homeAddresses,
-                          icon: Icons.home,
-                          onAddressSelected: _onAddressSelected,
-                          selectedAddress: selectedAddress,
-                          onEditAddress: _onEditAddress,
-                          onDeleteAddress: _onDeleteAddress,
-                        ),
-                        SizedBox(height: 20),
-                        AddressSection(
-                          title: 'Work Address',
-                          addresses: workAddresses,
-                          icon: Icons.work,
-                          onAddressSelected: _onAddressSelected,
-                          selectedAddress: selectedAddress,
-                          onEditAddress: _onEditAddress,
-                          onDeleteAddress: _onDeleteAddress,
-                        ),
-                      ],
-                    ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Column(
+                    children: [
+                      AddressSection(
+                        title: 'Home Address',
+                        addresses: homeAddresses,
+                        icon: Icons.home,
+                        onAddressSelected: _onAddressSelected,
+                        selectedAddress: selectedAddress,
+                        onEditAddress: _onEditAddress,
+                        onDeleteAddress: _onDeleteAddress,
+                      ),
+                      SizedBox(height: 20),
+                      AddressSection(
+                        title: 'Work Address',
+                        addresses: workAddresses,
+                        icon: Icons.work,
+                        onAddressSelected: _onAddressSelected,
+                        selectedAddress: selectedAddress,
+                        onEditAddress: _onEditAddress,
+                        onDeleteAddress: _onDeleteAddress,
+                      ),
+                    ],
                   ),
                 ),
-                AddAddressButton(
-                  onAddressAdded: () {
-                    _loadAddresses();
-                  },
-                ),
-                SizedBox(height: 80), // Space for the "Next" button
-              ],
-            ),
+              ),
+              AddAddressButton(
+                onAddressAdded: () {
+                  _loadAddresses();
+                },
+              ),
+              SizedBox(height: 80), // Space for the "Next" button
+            ],
           ),
         ),
       ),
@@ -190,7 +157,6 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
                 MaterialPageRoute(builder: (context) => ConfirmOrderPage(selectedAddress: selectedAddress!)),
               );
             } else {
-              // Show a snackbar or dialog prompting the user to select an address
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Please select an address before proceeding.')),
               );
@@ -233,19 +199,31 @@ class AddressSection extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.green),
+                Icon(icon, color: Colors.green.shade700),
                 SizedBox(width: 8),
                 Text(
                   title,
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green.shade800,
+                  ),
                 ),
               ],
             ),
@@ -295,12 +273,23 @@ class AddressCardWithIcons extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        margin: EdgeInsets.only(bottom: 8),
-        padding: EdgeInsets.all(8),
+        margin: EdgeInsets.only(bottom: 12),
+        padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: isSelected ? Colors.green : Colors.grey.shade300, width: 2),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white.withOpacity(0.5),
+          color: isSelected ? Colors.green.shade50 : Colors.green.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.green.shade700 : Colors.green.shade200,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              spreadRadius: 1,
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,10 +299,26 @@ class AddressCardWithIcons extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(address.name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                  Text(address.phone, style: GoogleFonts.poppins(fontSize: 12)),
-                  Text('${address.street}, ${address.city}', style: GoogleFonts.poppins(fontSize: 12)),
-                  Text('${address.state} ${address.zipCode}', style: GoogleFonts.poppins(fontSize: 12)),
+                  Text(
+                    address.name,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade800,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    address.phone,
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                  ),
+                  Text(
+                    '${address.street}, ${address.city}',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                  ),
+                  Text(
+                    '${address.state} ${address.zipCode}',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                  ),
                 ],
               ),
             ),

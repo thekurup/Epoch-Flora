@@ -76,8 +76,8 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       // This creates the top bar of our page
       appBar: AppBar(
-        title: Text('Your Bag', style: GoogleFonts.poppins(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text('Your Bag', style: GoogleFonts.poppins(color: Colors.white)),
+        backgroundColor: Colors.green,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
       ),
@@ -130,7 +130,7 @@ class EmptyCartView extends StatelessWidget {
           SizedBox(height: 20),
           // Add a button to start shopping
           ElevatedButton(
-            child: Text('Start Shopping', style: GoogleFonts.poppins()),
+            child: Text('Start Shopping', style: GoogleFonts.poppins(color: Colors.black)),
             onPressed: () {
               // When pressed, take the user to the HomePage
               Navigator.pushReplacement(
@@ -139,7 +139,7 @@ class EmptyCartView extends StatelessWidget {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.blue,
               padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
             ),
           ),

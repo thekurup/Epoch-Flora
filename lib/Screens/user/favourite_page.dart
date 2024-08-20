@@ -48,22 +48,13 @@ class _FavouritePageState extends State<FavouritePage> {
   // It's like drawing the blueprint of how the page should look
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('Your Bag', style: GoogleFonts.poppins(color: Colors.white)),backgroundColor: Colors.green,),
       // The main content of the page
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // This creates the "My Favorites" title at the top of the page
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                'My Favorites',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            
             // This expands to fill the remaining space with the list of favorites
             Expanded(
               // If there are no favorites, show a message. Otherwise, show the list
