@@ -29,6 +29,9 @@ void main() async {
   // New: Register the AddressAdapter
   // This allows Hive to work with Address objects in the database
   Hive.registerAdapter(AddressAdapter());
+
+// This allows Hive to work with orders objects in the database
+  Hive.registerAdapter(OrderAdapter());
   
   // Initialize the UserDatabase
   await UserDatabase.initialize();

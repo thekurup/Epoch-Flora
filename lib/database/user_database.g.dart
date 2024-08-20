@@ -204,7 +204,7 @@ class CategoryAdapter extends TypeAdapter<Category> {
           typeId == other.typeId;
 }
 
-// New: This class helps Hive understand how to save and load Address objects
+// This class helps Hive understand how to save and load Address objects
 class AddressAdapter extends TypeAdapter<Address> {
   @override
   final int typeId = 4;  // This is like a unique ID for the Address class
@@ -264,6 +264,67 @@ class AddressAdapter extends TypeAdapter<Address> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is AddressAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+// New: This class helps Hive understand how to save and load Order objects
+class OrderAdapter extends TypeAdapter<Order> {
+  @override
+  final int typeId = 5;  // This is like a unique ID for the Order class
+
+  @override
+  // This method reads an Order object from the database
+  // It's like unpacking a box containing order information
+  Order read(BinaryReader reader) {
+    final numOfFields = reader.readByte();  // Read how many fields the Order has
+    final fields = <int, dynamic>{
+      // Read each field and store it in a map
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    // Create and return a new Order object with the read data
+    return Order(
+      id: fields[0] as String,
+      productName: fields[1] as String,
+      status: fields[2] as String,
+      price: fields[3] as double,
+      date: fields[4] as DateTime,
+      imageUrl: fields[5] as String,
+      quantity: fields[6] as int,
+    );
+  }
+
+  @override
+  // This method writes an Order object to the database
+  // It's like packing a box with order information
+  void write(BinaryWriter writer, Order obj) {
+    writer
+      ..writeByte(7)  // Write that Order has 7 fields
+      ..writeByte(0)
+      ..write(obj.id)  // Write id
+      ..writeByte(1)
+      ..write(obj.productName)  // Write productName
+      ..writeByte(2)
+      ..write(obj.status)  // Write status
+      ..writeByte(3)
+      ..write(obj.price)  // Write price
+      ..writeByte(4)
+      ..write(obj.date)  // Write date
+      ..writeByte(5)
+      ..write(obj.imageUrl)  // Write imageUrl
+      ..writeByte(6)
+      ..write(obj.quantity);  // Write quantity
+  }
+
+  @override
+  // These methods help Hive compare OrderAdapter objects
+  // They're like checking if two robot assistants are the same
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OrderAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

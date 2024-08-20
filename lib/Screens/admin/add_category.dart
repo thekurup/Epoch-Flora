@@ -10,10 +10,15 @@ class AddCategory extends StatefulWidget {
 }
 
 class _AddCategoryState extends State<AddCategory> {
+  // form key Used to manage form state and validation.
   final _formKey = GlobalKey<FormState>();
+  // _categoryNameController: Controls the text input for category names
   final _categoryNameController = TextEditingController();
+  // _categories: Holds a list of existing categories.
   List<Category> _categories = [];
+  // _editingIndex: Tracks which category is being edited.
   int? _editingIndex;
+  // _editingError: Holds any validation error messages.
   String? _editingError;
 
   @override
@@ -21,7 +26,7 @@ class _AddCategoryState extends State<AddCategory> {
     super.initState();
     _loadCategories();
   }
-
+// Loads existing categories from the database.
   void _loadCategories() {
     setState(() {
       _categories = UserDatabase.getAllCategories();
@@ -33,6 +38,8 @@ class _AddCategoryState extends State<AddCategory> {
     _categoryNameController.dispose();
     super.dispose();
   }
+
+// _saveCategory: Validates and saves the new category.
 
   void _saveCategory() async {
     if (_formKey.currentState!.validate()) {
@@ -50,6 +57,7 @@ class _AddCategoryState extends State<AddCategory> {
       }
     }
   }
+// _startEditing: Prepares to edit a category by setting the index and text.
 
   void _startEditing(int index) {
     setState(() {
@@ -58,14 +66,14 @@ class _AddCategoryState extends State<AddCategory> {
       _editingError = null;
     });
   }
-
+// _cancelEditing: Cancels editing and clears errors.
   void _cancelEditing() {
     setState(() {
       _editingIndex = null;
       _editingError = null;
     });
   }
-
+// _saveEditedCategory: Validates and saves the edited category.
   Future<void> _saveEditedCategory(int index) async {
     if (_validateCategoryName(_categoryNameController.text)) {
       bool success = await UserDatabase.updateCategory(index, _categoryNameController.text);
@@ -82,7 +90,7 @@ class _AddCategoryState extends State<AddCategory> {
       }
     }
   }
-
+// _validateCategoryName: Checks if the category name is valid and unique.
   bool _validateCategoryName(String name) {
     if (name.isEmpty) {
       setState(() => _editingError = 'Please enter a category name');
@@ -103,12 +111,12 @@ class _AddCategoryState extends State<AddCategory> {
     setState(() => _editingError = null);
     return true;
   }
-
+// _categoryHasProducts: Checks if the category has any associated products.
   bool _categoryHasProducts(String categoryName) {
     final products = UserDatabase.getProductsByCategory(categoryName);
     return products.isNotEmpty;
   }
-
+// _deleteCategory: Deletes a category if it's safe to do so (i.e., no products are in it).
   void _deleteCategory(int index) async {
     final categoryName = _categories[index].name;
     
@@ -116,7 +124,8 @@ class _AddCategoryState extends State<AddCategory> {
       _showErrorDialog("You can't delete this category because it contains products. Please delete the products in this category first.");
       return;
     }
-
+    
+//  THis section is for _showConfirmationDialog and _showErrorDialog messages
     bool? confirmDelete = await _showConfirmationDialog('Are you sure you want to delete this category?');
     if (confirmDelete == true) {
       bool success = await UserDatabase.deleteCategory(index);

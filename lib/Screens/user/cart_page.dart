@@ -379,7 +379,7 @@ class CheckoutButton extends StatelessWidget {
       padding: EdgeInsets.all(16),
       child: ElevatedButton(
         // Show the total cost on the button
-        child: Text('Checkout ₹${total.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 18)),
+        child: Text('Checkout ₹${total.toStringAsFixed(2)}', style: GoogleFonts.poppins(fontSize: 18,color: Colors.white),),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           minimumSize: Size(double.infinity, 50),

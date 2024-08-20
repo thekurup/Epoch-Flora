@@ -1,10 +1,12 @@
+// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
+
 import 'package:epoch/Screens/user/edit_profile.dart';
+import 'package:epoch/Screens/user/my_orders_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/Screens/user/home.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:epoch/Screens/userauth/login.dart';
-import 'package:epoch/Screens/user/edit_profile.dart'; // New import
 import 'dart:io'; // New import for File
 
 class ProfilePage extends StatefulWidget {
@@ -12,6 +14,8 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
+
+// Declares variables for storing user data and loading state.
 class _ProfilePageState extends State<ProfilePage> {
   String username = '';
   bool isLoading = true;
@@ -133,11 +137,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: Icons.shopping_bag,
                           text: 'My Orders',
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('My Orders functionality coming soon!')),
-                            );
-                          },
-                        ),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => MyOrdersPage()),
+                                  );
+                                },
+                              ),
                         SizedBox(height: 20),
                         ProfileButton(
                           icon: Icons.cancel,

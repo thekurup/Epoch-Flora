@@ -3,8 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:epoch/Screens/user/add_address.dart';
 import 'package:epoch/Screens/user/edit_address.dart';
-// TODO: Uncomment when ConfirmOrderPage is implemented
-// import 'package:epoch/Screens/user/confirm_order_page.dart';
+import 'package:epoch/Screens/user/confirm_order_page.dart';
 
 class AddressPage extends StatefulWidget {
   @override
@@ -12,19 +11,27 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> with SingleTickerProviderStateMixin {
+  // with SingleTickerProviderStateMixin: Allows the use of animation controllers
   Address? selectedAddress;
+  // Stores the currently selected address.
   late AnimationController _controller;
+  // Defines an animation controller for animations.
   late Animation<double> _animation;
+  // Defines the animation used with the controller.
   List<Address> homeAddresses = [];
+  // Holds the list of home addresses.
   List<Address> workAddresses = [];
+  // Holds the list of work addresses.
 
   @override
   void initState() {
+    // Initializes the state when the widget is created
     super.initState();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+    // Creates an animation controller that lasts for 300 milliseconds.
     _animation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -33,10 +40,12 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
   }
 
   void _loadAddresses() {
+    // Method to load addresses from the database.
     setState(() {
       homeAddresses = UserDatabase.getAddressesByType('Home');
       workAddresses = UserDatabase.getAddressesByType('Work');
     });
+    // Updates the state with the loaded addresses, triggering a UI rebuild.
   }
 
   @override
@@ -44,8 +53,11 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
     _controller.dispose();
     super.dispose();
   }
+  // Disposes of the animation controller to free up resources.
+
 
   void _onAddressSelected(Address address) {
+    // void _onAddressSelected(Address address): Called when an address is selected.
     setState(() {
       selectedAddress = address;
       if (selectedAddress != null) {
@@ -53,6 +65,7 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
       } else {
         _controller.reverse();
       }
+      // Updates the state with the selected address and animates the change.
     });
   }
 
@@ -61,15 +74,20 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
       context,
       MaterialPageRoute(builder: (context) => EditAddressPage(address: address)),
     );
+    // void _onEditAddress(Address address) async: Navigates to the edit address page and waits for the result.
 
+// if (result == true): If the address was successfully updated, reload the address list.
     if (result == true) {
       // Address was successfully updated, refresh the address list
       _loadAddresses();
     }
   }
 
+// void _onDeleteAddress(Address address) async: Shows a confirmation dialog for deleting an address.
   void _onDeleteAddress(Address address) async {
     // Show a confirmation dialog
+
+    // await showDialog(...): Displays a dialog asking for confirmation.
     bool confirmDelete = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -89,7 +107,8 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
         );
       },
     );
-
+    
+// if (confirmDelete == true): If confirmed, deletes the address and reloads the list.
     if (confirmDelete == true) {
       setState(() {
         UserDatabase.deleteAddress(address);
@@ -108,7 +127,7 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
         ),
         backgroundColor: Colors.green,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -165,11 +184,17 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
         scale: _animation,
         child: FloatingActionButton.extended(
           onPressed: () {
-            // TODO: Navigate to ConfirmOrderPage
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => ConfirmOrderPage(selectedAddress: selectedAddress!)),
-            // );
+            if (selectedAddress != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ConfirmOrderPage(selectedAddress: selectedAddress!)),
+              );
+            } else {
+              // Show a snackbar or dialog prompting the user to select an address
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please select an address before proceeding.')),
+              );
+            }
           },
           label: Text('Next', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           icon: Icon(Icons.arrow_forward),

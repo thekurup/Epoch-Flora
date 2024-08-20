@@ -19,11 +19,10 @@ class User extends HiveObject {
   @HiveField(2)  // This is like labeling a box to store the hashed password
   late String hashedPassword;
 
-  @HiveField(3)  // New: This is like labeling a box to store the profile image path
+  @HiveField(3)  // This is like labeling a box to store the profile image path
   String? profileImagePath;
 
   // Constructor: This is like filling out a form to create a new user
-  // New: Added optional profileImagePath parameter
   User(this.username, this.email, this.hashedPassword, {this.profileImagePath});
 }
 
@@ -75,7 +74,7 @@ class Category extends HiveObject {
   Category(this.name);
 }
 
-// New: Address class to represent user addresses
+// Address class to represent user addresses
 @HiveType(typeId: 4)  // This tells Hive how to store Address objects
 class Address extends HiveObject {
   @HiveField(0)
@@ -106,6 +105,43 @@ class Address extends HiveObject {
   Address(this.name, this.phone, this.street, this.city, this.state, this.zipCode, this.type, this.isBillingAddress);
 }
 
+// New: Order class to represent user orders
+@HiveType(typeId: 5)  // This tells Hive how to store Order objects
+class Order extends HiveObject {
+  @HiveField(0)
+  late String id;
+
+  @HiveField(1)
+  late String productName;
+
+  @HiveField(2)
+  late String status;
+
+  @HiveField(3)
+  late double price;
+
+  @HiveField(4)
+  late DateTime date;
+
+  @HiveField(5)
+  late String imageUrl;
+
+  @HiveField(6)
+  late int quantity;
+  
+
+  // Constructor: This is like creating a new order
+  Order({
+    required this.id,
+    required this.productName,
+    required this.status,
+    required this.price,
+    required this.date,
+    required this.imageUrl,
+    required this.quantity,
+  });
+}
+
 // These are the possible results when a user tries to log in
 enum LoginResult {
   success,
@@ -113,7 +149,7 @@ enum LoginResult {
   invalidPassword,
 }
 
-// UserDatabase class: Handles all database operations for users, products, cart, and categories
+// UserDatabase class: Handles all database operations for users, products, cart, categories, and orders
 class UserDatabase {
   // These are like labels for different sections in our database
   static const String _userBoxName = 'users';
@@ -121,7 +157,8 @@ class UserDatabase {
   static const String _cartBoxName = 'cart';
   static const String _categoryBoxName = 'categories';
   static const String _currentUserKey = 'currentUser';  // Key for storing current user
-  static const String _addressBoxName = 'addresses';  // New: Key for storing addresses
+  static const String _addressBoxName = 'addresses';  // Key for storing addresses
+  static const String _orderBoxName = 'orders';  // New: Key for storing orders
 
   // Initialize the database: This is like setting up different drawers to store information
   static Future<void> initialize() async {
@@ -129,7 +166,8 @@ class UserDatabase {
     await Hive.openBox<Product>(_productBoxName);
     await Hive.openBox<CartItem>(_cartBoxName);
     await Hive.openBox<Category>(_categoryBoxName);
-    await Hive.openBox<Address>(_addressBoxName);  // New: Open the 'addresses' box
+    await Hive.openBox<Address>(_addressBoxName);
+    await Hive.openBox<Order>(_orderBoxName);  // New: Open the 'orders' box
   }
 
   // Hash the password: This scrambles the password so it's not stored as plain text
@@ -208,7 +246,7 @@ class UserDatabase {
     // Update the user's information
     existingUser.email = updatedUser.email;
     existingUser.hashedPassword = updatedUser.hashedPassword;
-    existingUser.profileImagePath = updatedUser.profileImagePath;  // New: Update profile image path
+    existingUser.profileImagePath = updatedUser.profileImagePath;
     await existingUser.save();  // Save the changes
     return true;  // Update successful
   }
@@ -376,7 +414,7 @@ class UserDatabase {
     await box.clear();  // Remove all items from the cart
   }
 
- // Get cart total: It's like seeing the total price at checkout
+  // Get cart total: It's like seeing the total price at checkout
   static double getCartTotal() {
     final cartItems = getCartItems();  // Get all items in the cart
     return cartItems.fold(0, (total, item) => total + (item.product.price * item.quantity));  // Calculate total price
@@ -444,140 +482,40 @@ class UserDatabase {
     return name.length > 3 && RegExp(r'^[a-zA-Z\s]+$').hasMatch(name);
   }
 
-  // Get the current user's cart
-  static Future<List<CartItem>> getCurrentUserCart() async {
-    User? currentUser = await getCurrentUser();
-    if (currentUser != null) {
-      return getCartItems();
-    }
-    return [];  // Return an empty list if no user is logged in
-  }
+  // Address-related methods
 
-  // Get the current user's favorite products
-  static Future<List<Product>> getCurrentUserFavorites() async {
-    User? currentUser = await getCurrentUser();
-    if (currentUser != null) {
-      return getFavoriteProducts();
-    }
-    return [];  // Return an empty list if no user is logged in
-  }
-
-  // Check if a user is logged in
-  static Future<bool> isUserLoggedIn() async {
-    String? currentUsername = await _getCurrentUsername();
-    return currentUsername != null;
-  }
-
-  // Get the current user's email
-  static Future<String?> getCurrentUserEmail() async {
-    User? currentUser = await getCurrentUser();
-    return currentUser?.email;
-  }
-
-  // Update the current user's email
-  static Future<bool> updateCurrentUserEmail(String newEmail) async {
-    User? currentUser = await getCurrentUser();
-    if (currentUser != null) {
-      currentUser.email = newEmail;
-      return updateUser(currentUser);
-    }
-    return false;
-  }
-
-  // Update the current user's password
-  static Future<bool> updateCurrentUserPassword(String oldPassword, String newPassword) async {
-    User? currentUser = await getCurrentUser();
-    if (currentUser != null) {
-      if (currentUser.hashedPassword == _hashPassword(oldPassword)) {
-        currentUser.hashedPassword = _hashPassword(newPassword);
-        return updateUser(currentUser);
-      }
-    }
-    return false;
-  }
-
-  // Get the total number of products
-  static int getTotalProductCount() {
-    final box = Hive.box<Product>(_productBoxName);
-    return box.length;
-  }
-
-  // Get the total number of categories
-  static int getTotalCategoryCount() {
-    final box = Hive.box<Category>(_categoryBoxName);
-    return box.length;
-  }
-
-  // Search products by name
-  static List<Product> searchProducts(String query) {
-    final box = Hive.box<Product>(_productBoxName);
-    return box.values.where((product) => 
-      product.name.toLowerCase().contains(query.toLowerCase())
-    ).toList();
-  }
-
-  // Get products sorted by price (ascending or descending)
-  static List<Product> getProductsSortedByPrice({bool ascending = true}) {
-    List<Product> products = getAllProducts();
-    products.sort((a, b) => ascending ? a.price.compareTo(b.price) : b.price.compareTo(a.price));
-    return products;
-  }
-
-  // Get the most recent products
-  static List<Product> getMostRecentProducts({int limit = 10}) {
-    List<Product> products = getAllProducts();
-    products.sort((a, b) => b.key.compareTo(a.key));  // Assuming newer products have higher keys
-    return products.take(limit).toList();
-  }
-
-  // Update the current user's profile image
-  static Future<bool> updateCurrentUserProfileImage(String imagePath) async {
-    User? currentUser = await getCurrentUser();
-    if (currentUser != null) {
-      currentUser.profileImagePath = imagePath;
-      return updateUser(currentUser);
-    }
-    return false;
-  }
-
-  // Get the current user's profile image path
-  static Future<String?> getCurrentUserProfileImagePath() async {
-    User? currentUser = await getCurrentUser();
-    return currentUser?.profileImagePath;
-  }
-
-  // New: Add an address for the current user
+  // Add an address for the current user
   static Future<bool> addAddress(Address address) async {
     final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
     await box.add(address);  // Add the new address
     return true;  // Address added successfully
   }
 
-  // New: Get all addresses for the current user
+  // Get all addresses for the current user
   static List<Address> getAddresses() {
     final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
     return box.values.toList();  // Return all addresses as a list
   }
 
-  // New: Update an existing address
+  // Update an existing address
   static Future<bool> updateAddress(Address updatedAddress) async {
     await updatedAddress.save();  // Save the changes to the address
     return true;  // Address updated successfully
   }
 
-  // New: Delete an address
+  // Delete an address
   static Future<bool> deleteAddress(Address address) async {
     await address.delete();  // Delete the address
     return true;  // Address deleted successfully
   }
 
-  // New: Get addresses by type (Home or Work)
+  // Get addresses by type (Home or Work)
   static List<Address> getAddressesByType(String type) {
     final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
     return box.values.where((address) => address.type == type).toList();  // Return filtered addresses
   }
 
-  // New: Get the billing address
+  // Get the billing address
   static Address? getBillingAddress() {
     final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
     try {
@@ -589,7 +527,7 @@ class UserDatabase {
     }
   }
 
-  // New: Set an address as the billing address
+  // Set an address as the billing address
   static Future<bool> setBillingAddress(Address address) async {
     final box = Hive.box<Address>(_addressBoxName);  // Open the 'addresses' box
     for (var addr in box.values) {
@@ -597,5 +535,70 @@ class UserDatabase {
       await addr.save();  // Save the changes
     }
     return true;  // Billing address set successfully
+  }
+
+  // New: Order-related methods
+
+  // New: Save an order
+  static Future<void> saveOrder(Order order) async {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    await box.add(order);  // Add the new order
+  }
+
+  // New: Get all orders for the current user
+  static Future<List<Order>> getOrders() async {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    return box.values.toList().reversed.toList();  // Return all orders in reverse chronological order
+  }
+
+ // New: Get order by ID
+  static Future<Order?> getOrderById(String orderId) async {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    try {
+      return box.values.firstWhere((order) => order.id == orderId);
+    } catch (e) {
+      // If no order is found, return null
+      return null;
+    }
+  }
+  // New: Update order status
+  static Future<bool> updateOrderStatus(String orderId, String newStatus) async {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    final order = await getOrderById(orderId);
+    if (order != null) {
+      order.status = newStatus;
+      await order.save();  // Save the changes
+      return true;  // Update successful
+    }
+    return false;  // Order not found
+  }
+
+  // New: Delete an order
+  static Future<bool> deleteOrder(String orderId) async {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    final order = await getOrderById(orderId);
+    if (order != null) {
+      await order.delete();  // Delete the order
+      return true;  // Deletion successful
+    }
+    return false;  // Order not found
+  }
+
+  // New: Get orders by status
+  static List<Order> getOrdersByStatus(String status) {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    return box.values.where((order) => order.status == status).toList();
+  }
+
+  // New: Get total number of orders
+  static int getTotalOrderCount() {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    return box.length;
+  }
+
+  // New: Get total revenue from all orders
+  static double getTotalRevenue() {
+    final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
+    return box.values.fold(0, (total, order) => total + (order.price * order.quantity));
   }
 }
