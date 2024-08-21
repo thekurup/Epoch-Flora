@@ -1,12 +1,11 @@
 import 'package:epoch/Screens/admin/addproduct.dart';
 import 'package:epoch/Screens/admin/admin_product_list.dart';
-import 'package:epoch/Screens/admin/add_category.dart'; // New import
+import 'package:epoch/Screens/admin/add_category.dart';
 import 'package:epoch/Screens/admin_auth/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-// Import your admin login page and add product page
-
+import 'package:epoch/Screens/admin/user_list_page.dart';
+import 'package:epoch/Screens/admin/admin_order_list.dart'; // New import for the Order List page
 
 class AdminHome extends StatelessWidget {
   const AdminHome({super.key});
@@ -63,9 +62,17 @@ class AdminHome extends StatelessWidget {
                     );
                   }),
                   SizedBox(height: 20),
-                  _buildButton(context, 'Users List', () {}),
+                  _buildButton(context, 'Users List', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => UserListPage()),
+                    );
+                  }),
                   SizedBox(height: 20),
-                  _buildButton(context, 'Orders List', () {}),
+                  _buildButton(context, 'Orders List', () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => AdminOrderListPage()),
+                    );
+                  }),
                 ],
               ),
             ),

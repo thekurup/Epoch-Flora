@@ -291,7 +291,9 @@ class OrderAdapter extends TypeAdapter<Order> {
       date: fields[4] as DateTime,
       imageUrl: fields[5] as String,
       quantity: fields[6] as int,
-      deliveryPrice: fields[7] as double,  // New: Read the delivery price
+      deliveryPrice: fields[7] as double,
+      userId: fields[8] as String,    // New: Read the user ID
+      addressId: fields[9] as String, // New: Read the address ID
     );
   }
 
@@ -300,7 +302,7 @@ class OrderAdapter extends TypeAdapter<Order> {
   // It's like packing a box with order information
   void write(BinaryWriter writer, Order obj) {
     writer
-      ..writeByte(8)  // New: Write that Order now has 8 fields
+      ..writeByte(10)  // New: Write that Order now has 10 fields
       ..writeByte(0)
       ..write(obj.id)  // Write id
       ..writeByte(1)
@@ -316,7 +318,11 @@ class OrderAdapter extends TypeAdapter<Order> {
       ..writeByte(6)
       ..write(obj.quantity)  // Write quantity
       ..writeByte(7)
-      ..write(obj.deliveryPrice);  // New: Write the delivery price
+      ..write(obj.deliveryPrice)  // Write delivery price
+      ..writeByte(8)
+      ..write(obj.userId)    // New: Write the user ID
+      ..writeByte(9)
+      ..write(obj.addressId);  // New: Write the address ID
   }
 
   @override

@@ -57,8 +57,6 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
                 SizedBox(height: 20),
                 _buildPaymentOption(),
                 SizedBox(height: 20),
-                _buildTermsAndConditions(),
-                SizedBox(height: 20),
                 _buildPlaceOrderButton(),
               ],
             ),
@@ -218,14 +216,6 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTermsAndConditions() {
-    return Text(
-      'By placing an order you agree to our Terms And Conditions',
-      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-      textAlign: TextAlign.center,
     );
   }
 

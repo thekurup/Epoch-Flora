@@ -43,6 +43,7 @@ dependencies:
   permission_handler: ^10.0.0
   lottie: ^1.2.1
   intl: ^0.17.0 
+  flutter_staggered_animations: ^1.0.0
 
 
   # The following adds the Cupertino Icons font to your application.

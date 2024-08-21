@@ -28,9 +28,8 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
   void initState() {
     super.initState();
     _controller = AnimationController(
-      // _controller: Sets up the animation to last for 3 seconds.
-      duration: const Duration(seconds: 4),
-      // _controller.forward(): Starts the animation.
+      // _controller: Sets up the animation to last for 4 seconds.
+      duration: const Duration(seconds: 3),
       vsync: this,
     );
 
@@ -44,7 +43,7 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
     UserDatabase.clearCart();
 
     // Redirect to home page after 4 seconds
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => HomePage()),
         (Route<dynamic> route) => false,
@@ -52,11 +51,18 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
     });
   }
 
-  // Saves each ordered item to the database
+  // Updated: Saves each ordered item to the database
   void _saveOrder() async {
     try {
       // Calculate delivery price (you may need to adjust this based on your business logic)
       double deliveryPrice = widget.totalPrice >= 1200 ? 0 : 80; // Example: Free delivery for orders over 1200, otherwise 80
+
+      // Get the current user
+      User? currentUser = await UserDatabase.getCurrentUser();
+      if (currentUser == null) {
+        print('Error: No current user found');
+        return;
+      }
 
       for (var item in widget.orderedItems) {
         final order = Order(
@@ -67,7 +73,9 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
           date: DateTime.now(),
           imageUrl: item.product.imagePath,
           quantity: item.quantity,
-          deliveryPrice: deliveryPrice, // Added deliveryPrice
+          deliveryPrice: deliveryPrice,
+          userId: currentUser.key.toString(), // Add the user ID
+          addressId: widget.billingAddress.key.toString(), // Add the address ID
         );
         await UserDatabase.saveOrder(order);
         print('Saved order: ${order.id} - ${order.productName}');

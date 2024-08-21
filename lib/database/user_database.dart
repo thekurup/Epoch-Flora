@@ -132,6 +132,12 @@ class Order extends HiveObject {
   @HiveField(7)  // Field for delivery price
   late double deliveryPrice;
 
+  @HiveField(8)  // New: Field to store the user ID who placed the order
+  late String userId;
+
+  @HiveField(9)  // New: Field to store the address ID used for shipping
+  late String addressId;
+
   // Constructor: This is like creating a new order
   Order({
     required this.id,
@@ -142,6 +148,8 @@ class Order extends HiveObject {
     required this.imageUrl,
     required this.quantity,
     required this.deliveryPrice,
+    required this.userId,    // New: Added userId to constructor
+    required this.addressId, // New: Added addressId to constructor
   });
 }
 
@@ -235,6 +243,12 @@ class UserDatabase {
     }
     
     return users.first;  // Return the found user
+  }
+
+  // Get all users: It's like getting a list of all profiles in a phonebook
+  static Future<List<User>> getAllUsers() async {
+    final box = Hive.box<User>(_userBoxName);  // Open the 'users' box
+    return box.values.toList();  // Return all users as a list
   }
 
   // Update a user: It's like editing your profile on a social media site
@@ -367,7 +381,7 @@ class UserDatabase {
 
   // Cart-related methods
 
-  // Add to cart: It's like clicking "Add to Cart" on an online store
+ // Add to cart: It's like clicking "Add to Cart" on an online store
   static Future<bool> addToCart(Product product, {int quantity = 1}) async {
     final box = Hive.box<CartItem>(_cartBoxName);  // Open the 'cart' box
     final existingItem = box.values.firstWhere(
@@ -394,7 +408,8 @@ class UserDatabase {
   static Future<void> updateCartItem(CartItem item) async {
     await item.save();  // Save the changes to the cart item
   }
-// Remove from cart: It's like clicking "Remove" on an item in your cart
+
+  // Remove from cart: It's like clicking "Remove" on an item in your cart
   static Future<bool> removeFromCart(Product product) async {
     final box = Hive.box<CartItem>(_cartBoxName);  // Open the 'cart' box
     try {
@@ -633,5 +648,47 @@ class UserDatabase {
   static List<Order> getCanceledOrders() {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     return box.values.where((order) => order.status == 'Canceled').toList();
+  }
+
+  // Updated: Method to get a user by order ID
+  static Future<User?> getUserByOrderId(String orderId) async {
+    final orderBox = Hive.box<Order>(_orderBoxName);
+    final userBox = Hive.box<User>(_userBoxName);
+
+    try {
+      // Find the order
+      final order = orderBox.values.firstWhere((order) => order.id == orderId);
+      print('Found order: ${order.id}, userId: ${order.userId}');  // Debug print
+      
+      // Find the user associated with this order
+      final user = userBox.values.firstWhere((user) => user.key.toString() == order.userId);
+      print('Found user: ${user.username}');  // Debug print
+      
+      return user;
+    } catch (e) {
+      print('Error getting user by order ID: $e');
+      return null;
+    }
+  }
+
+  // Updated: Method to get an address by order ID
+  static Future<Address?> getAddressByOrderId(String orderId) async {
+    final orderBox = Hive.box<Order>(_orderBoxName);
+    final addressBox = Hive.box<Address>(_addressBoxName);
+
+    try {
+      // Find the order
+      final order = orderBox.values.firstWhere((order) => order.id == orderId);
+      print('Found order: ${order.id}, addressId: ${order.addressId}');  // Debug print
+      
+      // Find the address associated with this order
+      final address = addressBox.values.firstWhere((address) => address.key.toString() == order.addressId);
+      print('Found address: ${address.name}');  // Debug print
+      
+      return address;
+    } catch (e) {
+      print('Error getting address by order ID: $e');
+      return null;
+    }
   }
 }
