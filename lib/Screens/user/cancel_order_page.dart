@@ -32,7 +32,6 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error loading canceled orders: $e');
       setState(() {
         isLoading = false;
       });
@@ -138,7 +137,7 @@ class CanceledOrderCard extends StatelessWidget {
                     height: 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      print('Error loading image: $error');
+                    
                       return Icon(Icons.error, size: 80);
                     },
                   ),

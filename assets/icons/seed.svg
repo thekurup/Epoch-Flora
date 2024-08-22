@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <g fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Pot -->
+    <rect x="22" y="40" width="20" height="12" fill="#8B5A2B" stroke="none"/>
+    
+    <!-- Stem -->
+    <line x1="32" y1="40" x2="32" y2="28" stroke="#4CAF50" stroke-width="4"/>
+    
+    <!-- Left Leaf -->
+    <path d="M32,28 C25,25 20,18 22,12 C25,10 30,15 32,18" fill="#4CAF50" stroke="none"/>
+
+    <!-- Right Leaf -->
+    <path d="M32,28 C39,25 44,18 42,12 C39,10 34,15 32,18" fill="#4CAF50" stroke="none"/>
+  </g>
+</svg>

@@ -105,6 +105,12 @@ flutter:
     - assets/images/cash.jpg
     - assets/animations/order_success.json
     - assets/animations/cancel_order.json
+    - assets/icons/seed.svg
+    - assets/icons/sprout.svg
+    - assets/icons/small_plant.svg
+    - assets/icons/blooming_plant.svg
+    - assets/icons/grown_plant.svg
+    - assets/icons/nearby_hub.svg
 
     
 

@@ -29,10 +29,6 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
     _userFuture = UserDatabase.getUserByOrderId(widget.order.id);
     _addressFuture = UserDatabase.getAddressByOrderId(widget.order.id);
     
-    // Debug print
-    print('Order ID: ${widget.order.id}');
-    print('User ID: ${widget.order.userId}');
-    print('Address ID: ${widget.order.addressId}');
   }
 
   @override

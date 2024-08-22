@@ -106,7 +106,6 @@ class _EditProductState extends State<EditProduct> {
       }
     } catch (e) {
       // If something goes wrong, we print the error and show a message to the user
-      print('Error picking image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to pick image')),
       );
@@ -392,8 +391,6 @@ class _EditProductState extends State<EditProduct> {
         );
       }
     } catch (e) {
-      // If an error occurs, we print it and show an error message
-      print('Error updating product: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred while updating the product')),
       );

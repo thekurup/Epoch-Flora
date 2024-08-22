@@ -60,7 +60,7 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
       // Get the current user
       User? currentUser = await UserDatabase.getCurrentUser();
       if (currentUser == null) {
-        print('Error: No current user found');
+        
         return;
       }
 
@@ -78,11 +78,11 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
           addressId: widget.billingAddress.key.toString(), // Add the address ID
         );
         await UserDatabase.saveOrder(order);
-        print('Saved order: ${order.id} - ${order.productName}');
+       
       }
-      print('All orders saved successfully. Total items: ${widget.orderedItems.length}, Total price: ${widget.totalPrice}');
+     
     } catch (e) {
-      print('Error saving orders: $e');
+     
     }
   }
 

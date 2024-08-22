@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:lottie/lottie.dart';
 import 'package:epoch/screens/user/cancel_order_page.dart';
+import 'package:epoch/screens/user/order_tracker_page.dart';
 
 class MyOrdersPage extends StatefulWidget {
   @override
@@ -23,16 +24,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
 
   Future<void> _loadOrders() async {
     try {
-      print('Starting to load orders...'); // Debug print
       final loadedOrders = await UserDatabase.getOrders();
-      print('Loaded ${loadedOrders.length} orders'); // Debug print
       setState(() {
         orders = loadedOrders;
         isLoading = false;
       });
-      for (var order in orders) {
-        print('Order: ${order.id} - ${order.productName} - ${order.status}'); // Debug print
-      }
     } catch (e) {
       print('Error loading orders: $e');
       setState(() {
@@ -79,7 +75,6 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     }
   }
 
-  // Updated: _cancelOrder method now refreshes the order list after cancellation
   Future<void> _cancelOrder(Order order) async {
     bool removed = await UserDatabase.removeOrder(order.id);
 
@@ -132,6 +127,14 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                       return OrderCard(
                         order: orders[index],
                         onCancel: () => _showCancelConfirmation(orders[index]),
+                        onTrack: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => OrderTrackerPage(orderId: orders[index].id),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -143,13 +146,19 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
 class OrderCard extends StatelessWidget {
   final Order order;
   final VoidCallback onCancel;
+  final VoidCallback onTrack;
 
-  const OrderCard({Key? key, required this.order, required this.onCancel}) : super(key: key);
+  const OrderCard({
+    Key? key,
+    required this.order,
+    required this.onCancel,
+    required this.onTrack,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     double productTotal = order.price * order.quantity;
-    double deliveryPrice = order.deliveryPrice ?? 0;  // Use 0 if deliveryPrice is null
+    double deliveryPrice = order.deliveryPrice ?? 0;
     double total = productTotal + deliveryPrice;
 
     return Card(
@@ -172,7 +181,7 @@ class OrderCard extends StatelessWidget {
                     height: 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      print('Error loading image: $error'); // Debug print
+                      print('Error loading image: $error');
                       return Icon(Icons.error, size: 80);
                     },
                   ),
@@ -249,11 +258,7 @@ class OrderCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Tracking functionality coming soon!')),
-                      );
-                    },
+                    onPressed: onTrack,
                     child: Text('Track'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,

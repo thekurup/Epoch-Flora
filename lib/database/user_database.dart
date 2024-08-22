@@ -420,7 +420,6 @@ class UserDatabase {
       return true;  // Removal successful
     } catch (e) {
       // Item not found in the cart
-      print('Product ${product.name} not found in the cart');
       return false;  // Removal failed
     }
   }
@@ -658,15 +657,14 @@ class UserDatabase {
     try {
       // Find the order
       final order = orderBox.values.firstWhere((order) => order.id == orderId);
-      print('Found order: ${order.id}, userId: ${order.userId}');  // Debug print
       
       // Find the user associated with this order
       final user = userBox.values.firstWhere((user) => user.key.toString() == order.userId);
-      print('Found user: ${user.username}');  // Debug print
+       
       
       return user;
     } catch (e) {
-      print('Error getting user by order ID: $e');
+
       return null;
     }
   }
@@ -679,15 +677,15 @@ class UserDatabase {
     try {
       // Find the order
       final order = orderBox.values.firstWhere((order) => order.id == orderId);
-      print('Found order: ${order.id}, addressId: ${order.addressId}');  // Debug print
+     
       
       // Find the address associated with this order
       final address = addressBox.values.firstWhere((address) => address.key.toString() == order.addressId);
-      print('Found address: ${address.name}');  // Debug print
+     
       
       return address;
     } catch (e) {
-      print('Error getting address by order ID: $e');
+      
       return null;
     }
   }

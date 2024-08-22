@@ -30,7 +30,6 @@ class _AdminOrderListPageState extends State<AdminOrderListPage> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error loading orders: $e');
       setState(() {
         isLoading = false;
       });
@@ -102,7 +101,7 @@ class OrderCard extends StatelessWidget {
                 height: 80,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  print('Error loading image: $error');
+                 
                   return Icon(Icons.error, size: 80);
                 },
               ),
