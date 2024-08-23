@@ -48,39 +48,57 @@ class _FavouritePageState extends State<FavouritePage> {
   // It's like drawing the blueprint of how the page should look
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Your Bag', style: GoogleFonts.poppins(color: Colors.white)),backgroundColor: Colors.green,),
-      // The main content of the page
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            
-            // This expands to fill the remaining space with the list of favorites
-            Expanded(
-              // If there are no favorites, show a message. Otherwise, show the list
-              child: _favoriteProducts.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No favorite plants yet',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: Colors.grey,
+      // Updated AppBar to match the cart page style
+      appBar: AppBar(
+        title: Text('Your Favorites', style: GoogleFonts.poppins(color: Colors.white)),
+        backgroundColor: Colors.green,
+        elevation: 0, // Removed shadow to blend with the gradient background
+      ),
+      // New: Wrap the body in a Container with gradient background
+      body: Container(
+        // Added decoration to create a gradient background
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            // Colors adapt based on the current theme (light or dark mode)
+            colors: Theme.of(context).brightness == Brightness.light
+                ? [Color(0xFF1A1A2E), Color(0xFF3A3A5A)]
+                : [Color(0xFF0A0A1E), Color(0xFF2A2A4A)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+               SizedBox(height: 20,),
+              // This expands to fill the remaining space with the list of favorites
+              Expanded(
+                // If there are no favorites, show a message. Otherwise, show the list
+                child: _favoriteProducts.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No favorite plants yet',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Colors.grey[400], // Updated color for better visibility
+                          ),
                         ),
+                      )
+                    : ListView.builder(
+                        // This builds a scrollable list of favorite products
+                        itemCount: _favoriteProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = _favoriteProducts[index];
+                          return FavoriteProductCard(
+                            product: product,
+                            onFavoriteToggle: () => _toggleFavorite(product),
+                          );
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      // This builds a scrollable list of favorite products
-                      itemCount: _favoriteProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = _favoriteProducts[index];
-                        return FavoriteProductCard(
-                          product: product,
-                          onFavoriteToggle: () => _toggleFavorite(product),
-                        );
-                      },
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
       // This adds a bottom navigation bar to the page
@@ -110,6 +128,8 @@ class FavoriteProductCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+      // Updated: Changed card color to semi-transparent white for better visibility on gradient background
+      color: Colors.white.withOpacity(0.1),
       child: InkWell(
         // When the card is tapped, navigate to the product detail page
         onTap: () {
@@ -145,6 +165,7 @@ class FavoriteProductCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
+                        color: Colors.white, // Updated color for visibility on dark background
                       ),
                     ),
                     SizedBox(height: 4),
@@ -152,7 +173,7 @@ class FavoriteProductCard extends StatelessWidget {
                       product.category,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: Colors.grey[400], // Updated color for better visibility
                       ),
                     ),
                     SizedBox(height: 4),
@@ -161,7 +182,7 @@ class FavoriteProductCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: Colors.green,
+                        color: Colors.green, // Kept green for emphasis
                       ),
                     ),
                   ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class OrderTrackerPage extends StatefulWidget {
   final String orderId;
@@ -29,13 +28,13 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
     'Delivered'
   ];
 
-  final List<String> _iconPaths = [
-    'assets/icons/seed.svg',
-    'assets/icons/sprout.svg',
-    'assets/icons/small_plant.svg',
-    'assets/icons/nearby_hub.svg',
-    'assets/icons/blooming_plant.svg',
-    'assets/icons/grown_plant.svg',
+  final List<IconData> _statusIcons = [
+    Icons.receipt_long,
+    Icons.check_circle,
+    Icons.local_shipping,
+    Icons.hub,
+    Icons.delivery_dining,
+    Icons.home,
   ];
 
   @override
@@ -85,18 +84,36 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
       appBar: AppBar(
         title: Text('Order Tracker', style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.green,
+        elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: _order == null
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildOrderTracker(),
-                  _buildOrderInfo(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A1A2E), Color(0xFF3A3A5A)],
+          ),
+        ),
+        child: _order == null
+            ? Center(child: CircularProgressIndicator(color: Colors.white))
+            : CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        _buildOrderTracker(),
+                        _buildOrderInfo(),
+                      ],
+                    ),
+                  ),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Container(),
+                  ),
                 ],
               ),
-            ),
+      ),
     );
   }
 
@@ -107,10 +124,10 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Please check your order status to get the item delivered to your home',
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+            'You can track your orders journey here and stay updated on its arrival at your doorstep! 🌱🚚',
+            style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[300]),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
           AnimatedBuilder(
             animation: _progressAnimation,
             builder: (context, child) {
@@ -130,7 +147,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
                       isCurrentStatus: isCurrentStatus,
                       isLastStep: index == _statusList.length - 1,
                       date: _order!.date,
-                      iconPath: _iconPaths[index],
+                      icon: _statusIcons[index],
                       index: index,
                     );
                   }),
@@ -149,7 +166,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
     required bool isCurrentStatus,
     required bool isLastStep,
     required DateTime date,
-    required String iconPath,
+    required IconData icon,
     required int index,
   }) {
     return Row(
@@ -164,30 +181,21 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: isCompleted || isCurrentStatus
-                        ? LinearGradient(
-                            colors: [Colors.green.shade300, Colors.green.shade700],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    color: isCompleted || isCurrentStatus ? null : Colors.grey[300],
-                    boxShadow: isCurrentStatus
-                        ? [
-                            BoxShadow(
-                              color: Colors.green.withOpacity(0.5),
-                              blurRadius: 10 * _heartbeatController.value,
-                              spreadRadius: 2 * _heartbeatController.value,
-                            )
-                          ]
-                        : [],
+                    color: isCompleted || isCurrentStatus ? Color(0xFF00AAFF) : Colors.grey[700],
+                    boxShadow: [
+                      BoxShadow(
+                        color: isCurrentStatus
+                            ? Color(0xFF00AAFF).withOpacity(0.5)
+                            : Colors.black.withOpacity(0.3),
+                        blurRadius: isCurrentStatus ? 15 * _heartbeatController.value : 5,
+                        spreadRadius: isCurrentStatus ? 5 * _heartbeatController.value : 1,
+                      )
+                    ],
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(8),
-                    child: SvgPicture.asset(
-                      iconPath,
-                      color: isCompleted || isCurrentStatus ? Colors.white : Colors.grey[600],
-                    ),
+                  child: Icon(
+                    icon,
+                    color: isCompleted || isCurrentStatus ? Colors.white : Colors.grey[400],
+                    size: 24,
                   ),
                 );
               },
@@ -196,7 +204,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
               Container(
                 width: 2,
                 height: 30,
-                color: Colors.transparent,
+                color: Colors.grey[700],
               ),
           ],
         ),
@@ -205,27 +213,22 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AnimatedDefaultTextStyle(
-                duration: Duration(milliseconds: 300),
+              Text(
+                status,
                 style: GoogleFonts.poppins(
                   fontSize: isCurrentStatus ? 18 : 16,
                   fontWeight: isCurrentStatus ? FontWeight.bold : FontWeight.normal,
-                  color: isCompleted || isCurrentStatus ? Colors.green.shade700 : Colors.grey[600],
+                  color: isCompleted || isCurrentStatus ? Colors.white : Colors.grey[400],
                 ),
-                child: Text(status),
               ),
               if (isCurrentStatus)
                 Text(
                   'Your order is ${status.toLowerCase()}',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade600),
+                  style: GoogleFonts.poppins(fontSize: 12, color: Color(0xFF00AAFF)),
                 ),
-              AnimatedOpacity(
-                duration: Duration(milliseconds: 500),
-                opacity: isCompleted || isCurrentStatus ? 1.0 : 0.0,
-                child: Text(
-                  DateFormat('dd/MM/yyyy, HH:mm').format(date),
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-                ),
+              Text(
+                DateFormat('dd/MM/yyyy, HH:mm').format(date),
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[400]),
               ),
             ],
           ),
@@ -242,7 +245,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
         children: [
           Text(
             'Order Info',
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           SizedBox(height: 10),
           InkWell(
@@ -252,34 +255,26 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
                 SnackBar(content: Text('View Order Details coming soon!')),
               );
             },
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 300),
+            child: Container(
               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.1),
-                    blurRadius: 5,
-                    offset: Offset(0, 2),
-                  ),
-                ],
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.green.shade600),
+                  Icon(Icons.info_outline, color: Color(0xFF00AAFF)),
                   SizedBox(width: 10),
                   Text(
                     'View order details',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.green.shade700,
+                      color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Spacer(),
-                  Icon(Icons.arrow_forward_ios, color: Colors.green.shade600, size: 16),
+                  Icon(Icons.arrow_forward_ios, color: Color(0xFF00AAFF), size: 16),
                 ],
               ),
             ),
@@ -300,16 +295,12 @@ class ProgressLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey[300]!
+      ..color = Colors.grey[700]!
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
     final completedPaint = Paint()
-      ..shader = LinearGradient(
-        colors: [Colors.blue.shade300, Colors.blue.shade700],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..color = Color(0xFF00AAFF)
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
 

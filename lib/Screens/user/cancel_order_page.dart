@@ -50,22 +50,31 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadCanceledOrders,
-              child: canceledOrders.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      itemCount: canceledOrders.length,
-                      itemBuilder: (context, index) {
-                        return CanceledOrderCard(
-                          order: canceledOrders[index],
-                          onOrderAgain: () => _orderAgain(canceledOrders[index]),
-                        );
-                      },
-                    ),
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A1A2E), Color(0xFF3A3A5A)],
+          ),
+        ),
+        child: isLoading
+            ? Center(child: CircularProgressIndicator(color: Colors.white))
+            : RefreshIndicator(
+                onRefresh: _loadCanceledOrders,
+                child: canceledOrders.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        itemCount: canceledOrders.length,
+                        itemBuilder: (context, index) {
+                          return CanceledOrderCard(
+                            order: canceledOrders[index],
+                            onOrderAgain: () => _orderAgain(canceledOrders[index]),
+                          );
+                        },
+                      ),
+              ),
+      ),
     );
   }
 
@@ -77,16 +86,16 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.cancel_outlined, size: 100, color: Colors.grey),
+              Icon(Icons.cancel_outlined, size: 100, color: Colors.grey[300]),
               SizedBox(height: 16),
               Text(
                 'No Canceled Orders',
-                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
+                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               SizedBox(height: 8),
               Text(
                 'You haven\'t canceled any orders yet.',
-                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[300]),
               ),
             ],
           ),
@@ -121,6 +130,7 @@ class CanceledOrderCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white.withOpacity(0.1),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -137,8 +147,7 @@ class CanceledOrderCard extends StatelessWidget {
                     height: 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                    
-                      return Icon(Icons.error, size: 80);
+                      return Icon(Icons.error, size: 80, color: Colors.white);
                     },
                   ),
                 ),
@@ -152,6 +161,7 @@ class CanceledOrderCard extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       SizedBox(height: 4),
@@ -166,7 +176,7 @@ class CanceledOrderCard extends StatelessWidget {
                       Text(
                         'Product Price: ₹${order.price.toStringAsFixed(2)} x ${order.quantity}',
                         style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
+                          color: Colors.grey[300],
                           fontSize: 14,
                         ),
                       ),
@@ -175,6 +185,7 @@ class CanceledOrderCard extends StatelessWidget {
                         'Product Total: ₹${productTotal.toStringAsFixed(2)}',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                       ),
                       if (deliveryPrice > 0) ...[
@@ -182,7 +193,7 @@ class CanceledOrderCard extends StatelessWidget {
                         Text(
                           'Delivery Price: ₹${deliveryPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.poppins(
-                            color: Colors.grey[600],
+                            color: Colors.grey[300],
                             fontSize: 14,
                           ),
                         ),
@@ -199,7 +210,7 @@ class CanceledOrderCard extends StatelessWidget {
                       Text(
                         'Ordered on: ${DateFormat('MMM d, yyyy').format(order.date)}',
                         style: GoogleFonts.poppins(
-                          color: Colors.grey,
+                          color: Colors.grey[300],
                           fontSize: 12,
                         ),
                       ),

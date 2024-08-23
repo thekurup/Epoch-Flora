@@ -105,7 +105,13 @@ class _AddressPageState extends State<AddressPage> with SingleTickerProviderStat
         elevation: 0,
       ),
       body: Container(
-        color: Colors.green.shade50, // Light green background
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A1A2E), Color(0xFF3A3A5A)],
+          ),
+        ),
         child: SafeArea(
           child: Column(
             children: [
@@ -199,30 +205,22 @@ class AddressSection extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.green.shade700),
+                Icon(icon, color: Colors.white),
                 SizedBox(width: 8),
                 Text(
                   title,
                   style: GoogleFonts.poppins(
                     fontSize: 18, 
                     fontWeight: FontWeight.bold,
-                    color: Colors.green.shade800,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -230,7 +228,7 @@ class AddressSection extends StatelessWidget {
             SizedBox(height: 16),
             Expanded(
               child: addresses.isEmpty
-                  ? Center(child: Text('No address added', style: GoogleFonts.poppins(color: Colors.grey)))
+                  ? Center(child: Text('No address added', style: GoogleFonts.poppins(color: Colors.grey[400])))
                   : ListView.builder(
                       itemCount: addresses.length,
                       itemBuilder: (context, index) {
@@ -276,19 +274,19 @@ class AddressCardWithIcons extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 12),
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green.shade50 : Colors.green.shade100,
+          color: isSelected ? Colors.green.withOpacity(0.2) : Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.green.shade700 : Colors.green.shade200,
+            color: isSelected ? Colors.green.shade700 : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              spreadRadius: 1,
-              blurRadius: 2,
-              offset: Offset(0, 1),
-            ),
+            if (isSelected)
+              BoxShadow(
+                color: Colors.green.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
           ],
         ),
         child: Row(
@@ -303,21 +301,21 @@ class AddressCardWithIcons extends StatelessWidget {
                     address.name,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
-                      color: Colors.green.shade800,
+                      color: isSelected ? Colors.green.shade300 : Colors.white,
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
                     address.phone,
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[300]),
                   ),
                   Text(
                     '${address.street}, ${address.city}',
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[300]),
                   ),
                   Text(
                     '${address.state} ${address.zipCode}',
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.green.shade700),
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[300]),
                   ),
                 ],
               ),

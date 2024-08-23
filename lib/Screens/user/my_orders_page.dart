@@ -115,35 +115,44 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
           ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : orders.isEmpty
-              ? Center(child: Text('No orders yet', style: GoogleFonts.poppins(fontSize: 18)))
-              : RefreshIndicator(
-                  onRefresh: _loadOrders,
-                  child: ListView.builder(
-                    itemCount: orders.length,
-                    itemBuilder: (context, index) {
-                      return OrderCard(
-                        order: orders[index],
-                        onCancel: () => _showCancelConfirmation(orders[index]),
-                        onTrack: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => OrderTrackerPage(orderId: orders[index].id),
-                            ),
-                          );
-                        },
-                      );
-                    },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A1A2E), Color(0xFF3A3A5A)],
+          ),
+        ),
+        child: isLoading
+            ? Center(child: CircularProgressIndicator(color: Colors.white))
+            : orders.isEmpty
+                ? Center(child: Text('No orders yet', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white)))
+                : RefreshIndicator(
+                    onRefresh: _loadOrders,
+                    child: ListView.builder(
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        return OrderCard(
+                          order: orders[index],
+                          onCancel: () => _showCancelConfirmation(orders[index]),
+                          onTrack: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OrderTrackerPage(orderId: orders[index].id),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
+      ),
     );
   }
 }
 
-class OrderCard extends StatelessWidget {
+class OrderCard extends StatefulWidget {
   final Order order;
   final VoidCallback onCancel;
   final VoidCallback onTrack;
@@ -156,15 +165,43 @@ class OrderCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _OrderCardState createState() => _OrderCardState();
+}
+
+class _OrderCardState extends State<OrderCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 1.0, end: 0.8).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    double productTotal = order.price * order.quantity;
-    double deliveryPrice = order.deliveryPrice ?? 0;
+    double productTotal = widget.order.price * widget.order.quantity;
+    double deliveryPrice = widget.order.deliveryPrice ?? 0;
     double total = productTotal + deliveryPrice;
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white.withOpacity(0.1),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -176,13 +213,13 @@ class OrderCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.file(
-                    File(order.imageUrl),
+                    File(widget.order.imageUrl),
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       print('Error loading image: $error');
-                      return Icon(Icons.error, size: 80);
+                      return Icon(Icons.error, size: 80, color: Colors.white);
                     },
                   ),
                 ),
@@ -192,15 +229,16 @@ class OrderCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        order.productName,
+                        widget.order.productName,
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        order.status,
+                        widget.order.status,
                         style: GoogleFonts.poppins(
                           color: Colors.green,
                           fontWeight: FontWeight.w500,
@@ -208,9 +246,9 @@ class OrderCard extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Product Price: ₹${order.price.toStringAsFixed(2)} x ${order.quantity}',
+                        'Product Price: ₹${widget.order.price.toStringAsFixed(2)} x ${widget.order.quantity}',
                         style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
+                          color: Colors.grey[300],
                           fontSize: 14,
                         ),
                       ),
@@ -219,6 +257,7 @@ class OrderCard extends StatelessWidget {
                         'Product Total: ₹${productTotal.toStringAsFixed(2)}',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                       ),
                       if (deliveryPrice > 0) ...[
@@ -226,7 +265,7 @@ class OrderCard extends StatelessWidget {
                         Text(
                           'Delivery Price: ₹${deliveryPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.poppins(
-                            color: Colors.grey[600],
+                            color: Colors.grey[300],
                             fontSize: 14,
                           ),
                         ),
@@ -241,9 +280,9 @@ class OrderCard extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Ordered on: ${DateFormat('MMM d, yyyy').format(order.date)}',
+                        'Ordered on: ${DateFormat('MMM d, yyyy').format(widget.order.date)}',
                         style: GoogleFonts.poppins(
-                          color: Colors.grey,
+                          color: Colors.grey[300],
                           fontSize: 12,
                         ),
                       ),
@@ -258,7 +297,7 @@ class OrderCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: onTrack,
+                    onPressed: widget.onTrack,
                     child: Text('Track'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -269,13 +308,41 @@ class OrderCard extends StatelessWidget {
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: onCancel,
-                    child: Text('Cancel order'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  child: MouseRegion(
+                    onEnter: (_) => _controller.forward(),
+                    onExit: (_) => _controller.reverse(),
+                    child: GestureDetector(
+                      onTap: widget.onCancel,
+                      child: AnimatedBuilder(
+                        animation: _animation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _animation.value,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.red.withOpacity(0.6),
+                                    Colors.red.withOpacity(0.4),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Cancel order',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
