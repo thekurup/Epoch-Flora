@@ -1,3 +1,5 @@
+import 'package:epoch/Screens/user/vieworder_detailpage.dart';
+import 'package:epoch/Screens/user/my_orders_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
@@ -85,7 +87,15 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
         title: Text('Order Tracker', style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.green,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyOrdersPage()),
+            );
+          },
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -124,7 +134,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'You can track your orders journey here and stay updated on its arrival at your doorstep! 🌱🚚',
+            'You can track your order\'s journey here and stay updated on its arrival at your doorstep! 🌱🚚',
             style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[300]),
           ),
           SizedBox(height: 30),
@@ -139,14 +149,14 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
                 ),
                 child: Column(
                   children: List.generate(_statusList.length, (index) {
+                    final status = _statusList[index];
                     final isCompleted = _progressAnimation.value >= (index + 1) / _statusList.length;
-                    final isCurrentStatus = _currentStatus == _statusList[index];
+                    final isCurrentStatus = _currentStatus == status;
                     return _buildStatusStep(
-                      status: _statusList[index],
+                      status: status,
                       isCompleted: isCompleted,
                       isCurrentStatus: isCurrentStatus,
                       isLastStep: index == _statusList.length - 1,
-                      date: _order!.date,
                       icon: _statusIcons[index],
                       index: index,
                     );
@@ -165,10 +175,12 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
     required bool isCompleted,
     required bool isCurrentStatus,
     required bool isLastStep,
-    required DateTime date,
     required IconData icon,
     required int index,
   }) {
+    // New: Get the timestamp for this status
+    final timestamp = _order!.getStatusTimestamp(status);
+
     return Row(
       children: [
         Column(
@@ -226,10 +238,12 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
                   'Your order is ${status.toLowerCase()}',
                   style: GoogleFonts.poppins(fontSize: 12, color: Color(0xFF00AAFF)),
                 ),
-              Text(
-                DateFormat('dd/MM/yyyy, HH:mm').format(date),
-                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[400]),
-              ),
+              // New: Display timestamp only if it exists
+              if (timestamp != null)
+                Text(
+                  DateFormat('dd/MM/yyyy, HH:mm').format(timestamp),
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[400]),
+                ),
             ],
           ),
         ),
@@ -250,10 +264,18 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
           SizedBox(height: 10),
           InkWell(
             onTap: () {
-              // TODO: Implement navigation to Order Detail page
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('View Order Details coming soon!')),
-              );
+              if (_order != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ViewOrderDetailPage(order: _order!),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Order details not available')),
+                );
+              }
             },
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),

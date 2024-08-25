@@ -132,11 +132,14 @@ class Order extends HiveObject {
   @HiveField(7)  // Field for delivery price
   late double deliveryPrice;
 
-  @HiveField(8)  // New: Field to store the user ID who placed the order
+  @HiveField(8)  // Field to store the user ID who placed the order
   late String userId;
 
-  @HiveField(9)  // New: Field to store the address ID used for shipping
+  @HiveField(9)  // Field to store the address ID used for shipping
   late String addressId;
+
+  @HiveField(10)  // New: Field to store timestamps for each status change
+  Map<String, DateTime> statusTimestamps = {};
 
   // Constructor: This is like creating a new order
   Order({
@@ -148,9 +151,23 @@ class Order extends HiveObject {
     required this.imageUrl,
     required this.quantity,
     required this.deliveryPrice,
-    required this.userId,    // New: Added userId to constructor
-    required this.addressId, // New: Added addressId to constructor
-  });
+    required this.userId,
+    required this.addressId,
+  }) {
+    // New: Initialize the statusTimestamps with the order placed date
+    statusTimestamps['Order Placed'] = date;
+  }
+
+  // New: Method to update the order status and record the timestamp
+  void updateStatus(String newStatus) {
+    status = newStatus;
+    statusTimestamps[newStatus] = DateTime.now();
+  }
+
+  // New: Method to get the timestamp for a specific status
+  DateTime? getStatusTimestamp(String status) {
+    return statusTimestamps[status];
+  }
 }
 
 // These are the possible results when a user tries to log in
@@ -581,11 +598,12 @@ class UserDatabase {
   }
 
   // Update order status
+  // New: This method now uses the Order class's updateStatus method
   static Future<bool> updateOrderStatus(String orderId, String newStatus) async {
     final box = Hive.box<Order>(_orderBoxName);  // Open the 'orders' box
     final order = await getOrderById(orderId);
     if (order != null) {
-      order.status = newStatus;
+      order.updateStatus(newStatus);  // New: Use the updateStatus method
       await order.save();  // Save the changes
       return true;  // Update successful
     }
@@ -634,7 +652,7 @@ class UserDatabase {
 
     // If the order is found, update its status to 'Canceled'
     if (orderToUpdate != null) {
-      orderToUpdate.status = 'Canceled';  // Update the status instead of deleting
+      orderToUpdate.updateStatus('Canceled');  // New: Use the updateStatus method
       await orderToUpdate.save();  // Save the changes
       return true;  // Update successful
     }
@@ -661,10 +679,8 @@ class UserDatabase {
       // Find the user associated with this order
       final user = userBox.values.firstWhere((user) => user.key.toString() == order.userId);
        
-      
       return user;
     } catch (e) {
-
       return null;
     }
   }
@@ -677,16 +693,34 @@ class UserDatabase {
     try {
       // Find the order
       final order = orderBox.values.firstWhere((order) => order.id == orderId);
-     
       
       // Find the address associated with this order
       final address = addressBox.values.firstWhere((address) => address.key.toString() == order.addressId);
-     
       
       return address;
     } catch (e) {
-      
       return null;
     }
+  }
+
+  // New: Get order status with timestamp
+  static Future<Map<String, dynamic>> getOrderStatusWithTimestamp(String orderId) async {
+    final order = await getOrderById(orderId);
+    if (order != null) {
+      return {
+        'status': order.status,
+        'timestamp': order.getStatusTimestamp(order.status),
+      };
+    }
+    return {};
+  }
+
+  // New: Get all status updates for an order
+  static Future<Map<String, DateTime>> getOrderStatusUpdates(String orderId) async {
+    final order = await getOrderById(orderId);
+    if (order != null) {
+      return order.statusTimestamps;
+    }
+    return {};
   }
 }

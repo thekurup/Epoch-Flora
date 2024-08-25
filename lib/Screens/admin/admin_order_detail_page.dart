@@ -28,7 +28,6 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
     }
     _userFuture = UserDatabase.getUserByOrderId(widget.order.id);
     _addressFuture = UserDatabase.getAddressByOrderId(widget.order.id);
-    
   }
 
   @override
@@ -56,6 +55,8 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
               _buildShippingAddress(),
               SizedBox(height: 20),
               _buildDeliveryStatusDropdown(),
+              SizedBox(height: 20),
+              _buildStatusHistory(),
               SizedBox(height: 20),
               _buildSaveButton(),
             ],
@@ -86,7 +87,7 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                 SizedBox(height: 8),
                 Text('Customer Name: ${user?.username ?? 'Unknown'}', style: GoogleFonts.poppins(fontSize: 16)),
                 SizedBox(height: 8),
-                Text('User ID: ${widget.order.userId}', style: GoogleFonts.poppins(fontSize: 16)),  // Debug info
+                Text('User ID: ${widget.order.userId}', style: GoogleFonts.poppins(fontSize: 16)),
                 if (snapshot.hasError)
                   Text('Error: ${snapshot.error}', style: GoogleFonts.poppins(color: Colors.red)),
               ],
@@ -165,7 +166,7 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
                 Text('${address?.zipCode ?? ''}, India', style: GoogleFonts.poppins(fontSize: 16)),
                 Text('Ph: ${address?.phone ?? ''}', style: GoogleFonts.poppins(fontSize: 16)),
                 SizedBox(height: 8),
-                Text('Address ID: ${widget.order.addressId}', style: GoogleFonts.poppins(fontSize: 16)),  // Debug info
+                Text('Address ID: ${widget.order.addressId}', style: GoogleFonts.poppins(fontSize: 16)),
                 if (snapshot.hasError)
                   Text('Error: ${snapshot.error}', style: GoogleFonts.poppins(color: Colors.red)),
               ],
@@ -184,7 +185,7 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Delivery Status', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Update Delivery Status', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 12),
             DropdownButton<String>(
               value: _selectedStatus,
@@ -209,16 +210,47 @@ class _AdminOrderDetailPageState extends State<AdminOrderDetailPage> {
     );
   }
 
+  Widget _buildStatusHistory() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Status History', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            ...widget.order.statusTimestamps.entries.map((entry) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(entry.key, style: GoogleFonts.poppins(fontSize: 16)),
+                    Text(DateFormat('MMM d, yyyy HH:mm').format(entry.value), 
+                         style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600])),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSaveButton() {
     return Center(
       child: ElevatedButton(
         onPressed: () async {
           try {
             await UserDatabase.updateOrderStatus(widget.order.id, _selectedStatus);
+            setState(() {
+              widget.order.updateStatus(_selectedStatus);
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Order status updated successfully')),
             );
-            Navigator.pop(context, true); // Return true to indicate successful update
           } catch (e) {
             print('Error updating order status: $e'); // Debug print
             ScaffoldMessenger.of(context).showSnackBar(

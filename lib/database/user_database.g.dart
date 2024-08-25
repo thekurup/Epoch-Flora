@@ -283,7 +283,7 @@ class OrderAdapter extends TypeAdapter<Order> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     // Create and return a new Order object with the read data
-    return Order(
+    final order = Order(
       id: fields[0] as String,
       productName: fields[1] as String,
       status: fields[2] as String,
@@ -292,9 +292,14 @@ class OrderAdapter extends TypeAdapter<Order> {
       imageUrl: fields[5] as String,
       quantity: fields[6] as int,
       deliveryPrice: fields[7] as double,
-      userId: fields[8] as String,    // New: Read the user ID
-      addressId: fields[9] as String, // New: Read the address ID
+      userId: fields[8] as String,
+      addressId: fields[9] as String,
     );
+    // New: Read the statusTimestamps map if it exists
+    if (fields.containsKey(10)) {
+      order.statusTimestamps = (fields[10] as Map).cast<String, DateTime>();
+    }
+    return order;
   }
 
   @override
@@ -302,7 +307,7 @@ class OrderAdapter extends TypeAdapter<Order> {
   // It's like packing a box with order information
   void write(BinaryWriter writer, Order obj) {
     writer
-      ..writeByte(10)  // New: Write that Order now has 10 fields
+      ..writeByte(11)  // New: Write that Order now has 11 fields
       ..writeByte(0)
       ..write(obj.id)  // Write id
       ..writeByte(1)
@@ -320,9 +325,11 @@ class OrderAdapter extends TypeAdapter<Order> {
       ..writeByte(7)
       ..write(obj.deliveryPrice)  // Write delivery price
       ..writeByte(8)
-      ..write(obj.userId)    // New: Write the user ID
+      ..write(obj.userId)  // Write the user ID
       ..writeByte(9)
-      ..write(obj.addressId);  // New: Write the address ID
+      ..write(obj.addressId)  // Write the address ID
+      ..writeByte(10)
+      ..write(obj.statusTimestamps);  // New: Write the statusTimestamps map
   }
 
   @override

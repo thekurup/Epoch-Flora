@@ -53,6 +53,14 @@ class _FavouritePageState extends State<FavouritePage> {
         title: Text('Your Favorites', style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: Colors.green,
         elevation: 0, // Removed shadow to blend with the gradient background
+        // New: Updated leading property to change back icon color and navigation
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // New: Navigate to HomePage instead of popping the current route
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+          },
+        ),
       ),
       // New: Wrap the body in a Container with gradient background
       body: Container(

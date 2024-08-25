@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
+import 'package:epoch/Screens/user/home.dart'; // New: Import HomePage
 import 'dart:io';
 
 // This class represents the product detail page in our app
@@ -95,7 +96,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   top: 16,
                   left: 16,
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    // New: Updated onTap to navigate to HomePage
+                    onTap: () {
+                      // New: Navigate to HomePage when back button is pressed
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
+                    },
                     child: Container(
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(

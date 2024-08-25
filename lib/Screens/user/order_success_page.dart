@@ -159,7 +159,7 @@ class _OrderSuccessPageState extends State<OrderSuccessPage> with TickerProvider
               ],
             ),
           ),
-        ),
+        ), 
       ),
     );
   }

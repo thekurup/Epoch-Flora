@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:lottie/lottie.dart';
 import 'package:epoch/screens/user/cancel_order_page.dart';
 import 'package:epoch/screens/user/order_tracker_page.dart';
+import 'package:epoch/Screens/user/profile_page.dart'; // New import for ProfilePage
 
 class MyOrdersPage extends StatefulWidget {
   @override
@@ -99,7 +100,12 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ProfilePage()),
+            );
+          },
         ),
         actions: [
           IconButton(
