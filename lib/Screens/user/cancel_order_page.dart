@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:epoch/Screens/user/profile_page.dart';
+import 'package:epoch/Screens/user/cart_page.dart';
 
 class CancelOrderPage extends StatefulWidget {
   @override
@@ -27,6 +29,14 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
     try {
       // Fetch canceled orders from the database
       final loadedOrders = UserDatabase.getCanceledOrders();
+      
+      // Sort the orders by cancellation date (most recent first)
+      loadedOrders.sort((a, b) {
+        DateTime aDate = a.statusTimestamps['Canceled'] ?? a.date;
+        DateTime bDate = b.statusTimestamps['Canceled'] ?? b.date;
+        return bDate.compareTo(aDate);
+      });
+
       setState(() {
         canceledOrders = loadedOrders;
         isLoading = false;
@@ -35,6 +45,7 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
       setState(() {
         isLoading = false;
       });
+      print('Error loading canceled orders: $e');
     }
   }
 
@@ -47,7 +58,7 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => ProfilePage())),
         ),
       ),
       body: Container(
@@ -105,12 +116,21 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
   }
 
   Future<void> _orderAgain(Order order) async {
-    // Implement order again functionality
-    // This could involve creating a new order based on the canceled one
-    // For now, we'll just show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Order Again functionality coming soon!')),
-    );
+    // Get the product from the database
+    Product? product = UserDatabase.getProductByName(order.productName);
+    
+    if (product != null) {
+      // Add the product to the cart
+      await UserDatabase.addToCart(product, quantity: order.quantity);
+      
+      // Navigate to the CartPage
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => CartPage()));
+    } else {
+      // Show an error message if the product is not found
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sorry, this product is no longer available.')),
+      );
+    }
   }
 }
 
@@ -125,6 +145,9 @@ class CanceledOrderCard extends StatelessWidget {
     double productTotal = order.price * order.quantity;
     double deliveryPrice = order.deliveryPrice;
     double total = productTotal + deliveryPrice;
+
+    // Get the cancellation date
+    DateTime canceledAt = order.statusTimestamps['Canceled'] ?? order.date;
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -214,6 +237,14 @@ class CanceledOrderCard extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Canceled on: ${DateFormat('MMM d, yyyy').format(canceledAt)}',
+                        style: GoogleFonts.poppins(
+                          color: Colors.grey[300],
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -227,7 +258,7 @@ class CanceledOrderCard extends StatelessWidget {
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                minimumSize: Size(double.infinity, 40), // makes the button full width
+                minimumSize: Size(double.infinity, 40),
               ),
             ),
           ],

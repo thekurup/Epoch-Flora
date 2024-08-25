@@ -381,6 +381,17 @@ class UserDatabase {
     return true;  // Deletion successful
   }
 
+  // New: Get a product by name
+  // This is like searching for a specific item in the store by its name
+  static Product? getProductByName(String productName) {
+    final box = Hive.box<Product>(_productBoxName);  // Open the 'products' box
+    try {
+      return box.values.firstWhere((product) => product.name == productName);
+    } catch (e) {
+      return null;  // Return null if no product is found with the given name
+    }
+  }
+
   // Favorite-related methods
 
   // Toggle favorite status: It's like clicking a heart icon to favorite or unfavorite an item
@@ -390,7 +401,7 @@ class UserDatabase {
     await product.save();  // Save the changes
   }
 
-  // Get favorite products: It's like viewing your list of favorite items
+ // Get favorite products: It's like viewing your list of favorite items
   static List<Product> getFavoriteProducts() {
     final box = Hive.box<Product>(_productBoxName);  // Open the 'products' box
     return box.values.where((product) => product.isFavorite).toList();  // Return only favorite products

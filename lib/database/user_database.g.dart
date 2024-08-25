@@ -296,6 +296,7 @@ class OrderAdapter extends TypeAdapter<Order> {
       addressId: fields[9] as String,
     );
     // New: Read the statusTimestamps map if it exists
+    // This is like checking if there's an extra compartment in the box with timestamps
     if (fields.containsKey(10)) {
       order.statusTimestamps = (fields[10] as Map).cast<String, DateTime>();
     }

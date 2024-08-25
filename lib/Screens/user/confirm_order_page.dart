@@ -20,6 +20,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
   double totalPrice = 0;
   double deliveryCharge = 80;
   double freeDeliveryThreshold = 1200;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -51,26 +52,24 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
             colors: [Color(0xFF1A1A2E), Color(0xFF3A3A5A)],
           ),
         ),
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildOrderSummary(),
-                      SizedBox(height: 24),
-                      _buildBillingAddress(),
-                      SizedBox(height: 24),
-                      _buildPaymentOption(),
-                    ],
-                  ),
-                ),
-              ),
+            ListView(
+              padding: EdgeInsets.fromLTRB(20, 24, 20, 80),
+              children: [
+                _buildOrderSummary(),
+                SizedBox(height: 24),
+                _buildBillingAddress(),
+                SizedBox(height: 24),
+                _buildPaymentOption(),
+              ],
             ),
-            _buildPlaceOrderButton(),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildPlaceOrderButton(),
+            ),
           ],
         ),
       ),
@@ -87,7 +86,14 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
             style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           SizedBox(height: 16),
-          ...cartItems.map((item) => _buildOrderItem(item)).toList(),
+          Container(
+            height: 150,
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: cartItems.length,
+              itemBuilder: (context, index) => _buildOrderItem(cartItems[index]),
+            ),
+          ),
           Divider(color: Colors.white.withOpacity(0.2), thickness: 1, height: 32),
           _buildPriceSummary(),
         ],
@@ -205,24 +211,26 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
           SizedBox(height: 16),
           Row(
             children: [
-              Container(
+              AnimatedContainer(
+                duration: Duration(milliseconds: 300),
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isCashOnDelivery ? Colors.greenAccent : Colors.white,
                   borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.greenAccent, width: 2),
                 ),
-                child: Checkbox(
-                  value: isCashOnDelivery,
-                  onChanged: (value) {
+                child: InkWell(
+                  onTap: () {
                     setState(() {
-                      isCashOnDelivery = value ?? false;
+                      isCashOnDelivery = !isCashOnDelivery;
                     });
                   },
-                  activeColor: Colors.greenAccent,
-                  checkColor: Colors.black,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+                  child: Center(
+                    child: isCashOnDelivery
+                        ? Icon(Icons.check, size: 18, color: Colors.black)
+                        : null,
+                  ),
                 ),
               ),
               SizedBox(width: 12),
@@ -260,6 +268,7 @@ class _ConfirmOrderPageState extends State<ConfirmOrderPage> {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      color: Colors.black.withOpacity(0.5),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.greenAccent,

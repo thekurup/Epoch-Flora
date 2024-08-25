@@ -111,6 +111,8 @@ flutter:
     - assets/icons/blooming_plant.svg
     - assets/icons/grown_plant.svg
     - assets/icons/nearby_hub.svg
+    - assets/animations/plant_search.json
+    - assets/animations/no_results.json
 
     
 
