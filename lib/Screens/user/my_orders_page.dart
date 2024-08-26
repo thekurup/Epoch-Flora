@@ -15,7 +15,9 @@ class MyOrdersPage extends StatefulWidget {
 
 class _MyOrdersPageState extends State<MyOrdersPage> {
   List<Order> orders = [];
+  // orders[]: A list to hold the orders fetched from the database.
   bool isLoading = true;
+  // isLoading: A boolean flag to show a loading indicator while the data is being fetched.
 
   @override
   void initState() {
@@ -24,14 +26,16 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   }
 
   Future<void> _loadOrders() async {
+    // _loadOrders: This function retrieves the user's orders from the database.
     try {
       final loadedOrders = await UserDatabase.getOrders();
+      // UserDatabase.getOrders(): Calls a function to get the orders.
       setState(() {
         orders = loadedOrders;
         isLoading = false;
       });
     } catch (e) {
-      print('Error loading orders: $e');
+      
       setState(() {
         isLoading = false;
       });
@@ -108,6 +112,8 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
           },
         ),
         actions: [
+          // actions: Adds a button on
+          //  the right side for viewing canceled orders, which navigates to the CancelOrderPage.
           IconButton(
             icon: Icon(Icons.cancel, color: Colors.white),
             onPressed: () async {
@@ -134,6 +140,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             : orders.isEmpty
                 ? Center(child: Text('No orders yet', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white)))
                 : RefreshIndicator(
+                  // RefreshIndicator: Allows the user to refresh the order list by pulling down.
                     onRefresh: _loadOrders,
                     child: ListView.builder(
                       itemCount: orders.length,
@@ -159,6 +166,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
 }
 
 class OrderCard extends StatefulWidget {
+  // OrderCard: A custom widget that represents a single order in the list
   final Order order;
   final VoidCallback onCancel;
   final VoidCallback onTrack;

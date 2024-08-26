@@ -1,3 +1,4 @@
+import 'package:epoch/Screens/user/latest_product.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:epoch/Screens/userauth/login.dart';
@@ -430,7 +431,16 @@ class LatestProductsSection extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  // TODO: Navigate to all products page
+                  // Fetch the latest 5 products
+                        final latestProducts = UserDatabase.getAllProducts().reversed.take(5).toList();
+                        
+                        // Navigate to the LatestProductsPage
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LatestProductsPage(products: latestProducts),
+                          ),
+                        );
                 },
                 child: Text(
                   'Show All',
