@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:epoch/Screens/splash_screen.dart';
 import 'package:epoch/database/user_database.dart';
 import 'package:epoch/Screens/user/plant_store.dart';
+import 'package:epoch/Screens/user/latest_product.dart'; // Add this import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,22 +24,23 @@ void main() async {
   Hive.registerAdapter(CartItemAdapter());
   
   // Register the CategoryAdapter
-  // This allows Hive to work with Category objects in the database
   Hive.registerAdapter(CategoryAdapter());
   
-  // New: Register the AddressAdapter
-  // This allows Hive to work with Address objects in the database
+  // Register the AddressAdapter
   Hive.registerAdapter(AddressAdapter());
 
-// This allows Hive to work with orders objects in the database
+  // Register the OrderAdapter
   Hive.registerAdapter(OrderAdapter());
   
   // Initialize the UserDatabase
   await UserDatabase.initialize();
   
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => PlantStore(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => PlantStore()),
+        // Add any other providers you might need for the latest products page
+      ],
       child: MyApp(),
     ),
   );
@@ -57,6 +59,9 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SplashScreen(),
+      routes: {
+        '/latest_products': (context) => LatestProductsPage(products: UserDatabase.getAllProducts()),
+      },
     );
   }
 }

@@ -41,7 +41,11 @@ class _ViewOrderDetailPageState extends State<ViewOrderDetailPage> with SingleTi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('View Order details', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold))),
+        centerTitle: true,
+        title: Center(child: Text('View Order details',style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),)),
         backgroundColor: Colors.green,
         elevation: 0,
         automaticallyImplyLeading: false, // Remove back button

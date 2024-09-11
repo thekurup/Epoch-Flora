@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:epoch/database/user_database.dart';
+// New import for Google Fonts
+import 'package:google_fonts/google_fonts.dart';
 
 // This class represents the 'Add Product' page in our app
 class AddProduct extends StatefulWidget {
@@ -33,7 +35,7 @@ class _AddProductState extends State<AddProduct> {
   // This is like getting a tool ready to pick images from the device
   final ImagePicker _picker = ImagePicker();
 
-  // New: This is now an empty list that will be populated with categories from the database
+  // This is now an empty list that will be populated with categories from the database
   List<Category> _categories = [];
 
   // This is like a flag to check if the user has tried to submit the form
@@ -41,14 +43,14 @@ class _AddProductState extends State<AddProduct> {
   // This keeps track of how many characters are in the description
   int _descriptionCharCount = 0;
   // This sets the maximum number of characters allowed in the description
-  final int _maxCharCount = 100;
+  final int _maxCharCount = 300;
 
   @override
   void initState() {
     super.initState();
     // This is like setting up a listener to count characters as the user types
     _descriptionController.addListener(_updateDescriptionCharCount);
-    // New: Load categories when the widget initializes
+    // Load categories when the widget initializes
     _loadCategories();
   }
 
@@ -69,7 +71,7 @@ class _AddProductState extends State<AddProduct> {
     });
   }
 
-  // New: This function loads categories from the database
+  // This function loads categories from the database
   void _loadCategories() {
     setState(() {
       _categories = UserDatabase.getAllCategories();
@@ -99,10 +101,22 @@ class _AddProductState extends State<AddProduct> {
   // This function builds the user interface for our 'Add Product' page
   Widget build(BuildContext context) {
     return Scaffold(
-      // This creates the top bar of our page
+      // New: Updated AppBar to match the style of AdminOrderListPage
       appBar: AppBar(
-        title: Text('Add Product'),
+        centerTitle: true,
+        title: Text(
+          'Add Product',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.green,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_outlined, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       // This creates the main content of our page
       body: SingleChildScrollView(
@@ -228,7 +242,7 @@ class _AddProductState extends State<AddProduct> {
   }
 
   // This function builds the category dropdown
-  // Updated: Now handles cases where no categories are available
+  // Now handles cases where no categories are available
   Widget _buildCategoryDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +325,7 @@ class _AddProductState extends State<AddProduct> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: _validateAndSaveProduct,
-        child: Text('Save'),
+        child: Text('Save',style: TextStyle(color: Colors.white),),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           padding: EdgeInsets.symmetric(vertical: 16),
@@ -326,7 +340,7 @@ class _AddProductState extends State<AddProduct> {
       _formSubmitted = true;
     });
 
-    // Updated: Now checks if a category is selected
+    // Now checks if a category is selected
     if (_formKey.currentState!.validate() && _image != null && _selectedCategory != null) {
       _saveProduct();
     } else {

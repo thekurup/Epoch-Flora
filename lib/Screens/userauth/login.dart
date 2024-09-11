@@ -1,7 +1,5 @@
-// This line tells Dart to ignore warnings about using const constructors
 // ignore_for_file: prefer_const_constructors
 
-// These lines import necessary Flutter packages and custom files
 import 'package:epoch/Screens/admin_auth/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   // These controllers manage the text input for username and password
-  // Example: When user types "john_doe", _usernameController.text will be "john_doe"
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -36,32 +33,46 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     // Scaffold provides the basic structure for the page
     return Scaffold(
-      // SingleChildScrollView allows the page to be scrolled if it's too long
-      body: SingleChildScrollView(
-        // Form groups together and validates form fields
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // This creates a custom-shaped container for the top image
-              ClipPath(
-                clipper: CustomClipPath(),
-                child: Container(
-                  height: MediaQuery.of(context).size.height * 0.4,
-                  width: double.infinity,
-                  child: Image.asset(
-                    'assets/images/startpage-plant.png',
-                    fit: BoxFit.cover,
-                  ),
+      // New: Remove the app bar to allow full-screen design
+      // New: Use a Stack to layer the background, curved image, and login form
+      body: Stack(
+        children: [
+          // New: Gradient background for the entire page
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1A1A2E), Color(0xFF3A3A5A)],
+              ),
+            ),
+          ),
+          // Curved cover photo section
+          ClipPath(
+            clipper: CurvedBottomClipper(),
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.4, // Takes up 40% of screen height
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/try2.jpeg'), // Make sure this image exists in your assets
+                  fit: BoxFit.cover,
                 ),
               ),
-
-              // This adds space around its child widgets
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+            ),
+          ),
+          
+          // New: Login form wrapped in SingleChildScrollView for scrolling if needed
+          
+          SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // New: Push content down to start below the curve
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.40),
                     // This centers the "Welcome to Flora" text
                     Center(
                       child: Text(
@@ -70,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF01320F),
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -79,72 +90,42 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         'Login to your account',
                         style: GoogleFonts.roboto(
-                          color: Colors.grey[600],
+                          color: Colors.grey[300],
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
                     SizedBox(height: 30),
-                    // This creates the username input field
-                    TextFormField(
+                    // Custom AnimatedTextField for username
+                    AnimatedTextField(
                       controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: Icon(Icons.person),
-                        filled: true,
-                        fillColor: Color(0xFFE1E5E2),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        errorText: _usernameError,
-                      ),
-                      // This checks if the username is valid
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your username';
-                        }
-                        return null;
-                      },
+                      labelText: 'Username',
+                      prefixIcon: Icons.person,
+                      errorText: _usernameError,
                     ),
                     SizedBox(height: 20),
-                    // This creates the password input field
-                    TextFormField(
+                    // Custom AnimatedTextField for password
+                    AnimatedTextField(
                       controller: _passwordController,
-                      obscureText: _obscureText, // Hides the password text
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock),
-                        // This adds a button to show/hide the password
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureText ? Icons.visibility : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            // This toggles the password visibility
-                            setState(() {
-                              _obscureText = !_obscureText;
-                            });
-                          },
+                      labelText: 'Password',
+                      prefixIcon: Icons.lock,
+                      errorText: _passwordError,
+                      obscureText: _obscureText,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.white,
                         ),
-                        filled: true,
-                        fillColor: Color(0xFFE1E5E2),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        errorText: _passwordError,
+                        onPressed: () {
+                          // This toggles the password visibility
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        },
                       ),
-                      // This checks if the password is valid
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        return null;
-                      },
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 30),
                     // This aligns the "Admin Login" text to the right
                     Align(
                       alignment: Alignment.centerRight,
@@ -152,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: GestureDetector(
                         onTap: () {
                           // This navigates to the AdminLogin page when tapped
-                          Navigator.push(
+                         Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => AdminLogin()),
                           );
@@ -160,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           'Admin Login',
                           style: TextStyle(
-                            color: Colors.green,
+                            color: Colors.green[300],
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -221,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           "Don't have an account?",
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: Colors.grey[400],
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -230,9 +211,9 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -240,8 +221,9 @@ class _LoginPageState extends State<LoginPage> {
   // This method handles the login process
   void _loginUser() async {
     if (_formKey.currentState!.validate()) {
-      final username = _usernameController.text;
-      final password = _passwordController.text;
+      // Trim whitespace from username and password
+      final username = _usernameController.text.trim();
+      final password = _passwordController.text.trim();
 
       // Clear any previous error messages
       setState(() {
@@ -285,19 +267,15 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// This class creates a custom shape for the top image container
-class CustomClipPath extends CustomClipper<Path> {
+// This class creates a custom clipper for the curved bottom of the cover photo
+class CurvedBottomClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    Path path = Path();
+    final path = Path();
     path.lineTo(0, size.height - 50);
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height,
-      size.width,
-      size.height - 50,
-    );
+    path.quadraticBezierTo(size.width / 2, size.height, size.width, size.height - 50);
     path.lineTo(size.width, 0);
+    path.close();
     return path;
   }
 
@@ -330,5 +308,105 @@ class CustomPopup extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// Custom AnimatedTextField widget for animated text input fields
+class AnimatedTextField extends StatefulWidget {
+  final TextEditingController controller;
+  final String labelText;
+  final IconData prefixIcon;
+  final String? errorText;
+  final bool obscureText;
+  final Widget? suffixIcon;
+
+  const AnimatedTextField({
+    Key? key,
+    required this.controller,
+    required this.labelText,
+    required this.prefixIcon,
+    this.errorText,
+    this.obscureText = false,
+    this.suffixIcon,
+  }) : super(key: key);
+
+  @override
+  _AnimatedTextFieldState createState() => _AnimatedTextFieldState();
+}
+
+class _AnimatedTextFieldState extends State<AnimatedTextField> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _borderColorTween;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _borderColorTween = ColorTween(
+      begin: Colors.grey[600],
+      end: Colors.blue[300],
+    ).animate(_animationController);
+
+    widget.controller.addListener(_handleTextChange);
+  }
+
+  void _handleTextChange() {
+    if (widget.controller.text.isNotEmpty) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _borderColorTween,
+      builder: (context, child) {
+        return TextFormField(
+          controller: widget.controller,
+          obscureText: widget.obscureText,
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: widget.labelText,
+            labelStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(widget.prefixIcon, color: Colors.grey[400]),
+            suffixIcon: widget.suffixIcon,
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.1),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: _borderColorTween.value!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey[600]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: _borderColorTween.value!),
+            ),
+            errorText: widget.errorText,
+            errorStyle: TextStyle(color: Colors.red[300]),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'This field is required';
+            }
+            return null;
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    widget.controller.removeListener(_handleTextChange);
+    super.dispose();
   }
 }

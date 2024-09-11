@@ -50,7 +50,11 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Search Plants', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        title: Text('Search Plants', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),),
         backgroundColor: Colors.green,
         elevation: 0,
       ),

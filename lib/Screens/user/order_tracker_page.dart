@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:epoch/Screens/user/vieworder_detailpage.dart';
 import 'package:epoch/Screens/user/my_orders_page.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   String _currentStatus = '';
 
   final List<String> _statusList = [
+    // List of order statuses to be displayed and tracked.
     'Order Placed',
     'Order Confirmed',
     'Shipped',
@@ -31,6 +34,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   ];
 
   final List<IconData> _statusIcons = [
+    //  list store Corresponding icons for each order status.
     Icons.receipt_long,
     Icons.check_circle,
     Icons.local_shipping,
@@ -55,6 +59,7 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   }
 
   Future<void> _loadOrderDetails() async {
+    // Load the order details from the database and update the current status and progress.
     final order = await UserDatabase.getOrderById(widget.orderId);
     if (order != null) {
       setState(() {
@@ -66,6 +71,8 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   }
 
   void _updateProgress() {
+    // _updateProgress: Calculate the progress based on the current status 
+    // and animate the progress bar accordingly.
     if (_order != null) {
       final currentStatusIndex = _statusList.indexOf(_currentStatus);
       final progress = (currentStatusIndex + 1) / _statusList.length;
@@ -75,6 +82,8 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
 
   @override
   void dispose() {
+    // Dispose of the animation controllers to free up resources
+    //  when the widget is removed from the widget tree.
     _progressController.dispose();
     _heartbeatController.dispose();
     super.dispose();
@@ -84,11 +93,15 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Tracker', style: GoogleFonts.poppins(color: Colors.white)),
+        centerTitle: true,
+        title: Text('Order Tracker', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),),
         backgroundColor: Colors.green,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -98,6 +111,8 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
         ),
       ),
       body: Container(
+        // Body: Set up the body with a background gradient. If the order is not loaded
+        //  yet, show a loading indicator; otherwise, display the order tracker and order info.
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -128,6 +143,9 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   }
 
   Widget _buildOrderTracker() {
+    // _buildOrderTracker: Build the order tracker section that shows
+    // the progress of the order through different statuses using a custom painter 
+    // and animated builder.
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -171,6 +189,9 @@ class _OrderTrackerPageState extends State<OrderTrackerPage> with TickerProvider
   }
 
   Widget _buildStatusStep({
+    // _buildStatusStep: A widget that represents each step in the order tracking process. 
+    // It checks if the step is completed or is the current status,
+    //  and also retrieves the timestamp for the status.
     required String status,
     required bool isCompleted,
     required bool isCurrentStatus,

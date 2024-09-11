@@ -78,13 +78,17 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       // This creates the top bar of our page
       appBar: AppBar(
-        title: Text('Your Bag', style: GoogleFonts.poppins(color: Colors.white)),
+        centerTitle: true,
+        title: Text('Your Bag', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),),
         backgroundColor: Colors.green,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
         // New: Added leading property for back navigation
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () {
             // New: Navigate to HomePage when back button is pressed
             Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));

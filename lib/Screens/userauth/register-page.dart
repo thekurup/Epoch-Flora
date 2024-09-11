@@ -11,6 +11,113 @@ import 'dart:math' show pi;
 import '../../database/user_database.dart';
 import 'login.dart';
 
+// AnimatedTextField widget for animated text input fields
+class AnimatedTextField extends StatefulWidget {
+  final TextEditingController controller;
+  final String labelText;
+  final IconData prefixIcon;
+  final String? errorText;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+
+  const AnimatedTextField({
+    Key? key,
+    required this.controller,
+    required this.labelText,
+    required this.prefixIcon,
+    this.errorText,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.validator,
+  }) : super(key: key);
+
+  @override
+  _AnimatedTextFieldState createState() => _AnimatedTextFieldState();
+}
+
+class _AnimatedTextFieldState extends State<AnimatedTextField> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _borderColorTween;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _borderColorTween = ColorTween(
+      begin: Colors.grey[600],
+      end: Colors.blue[300],
+    ).animate(_animationController);
+
+    widget.controller.addListener(_handleTextChange);
+  }
+
+  void _handleTextChange() {
+    if (widget.controller.text.isNotEmpty) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _borderColorTween,
+      builder: (context, child) {
+        return TextFormField(
+          controller: widget.controller,
+          obscureText: widget.obscureText,
+          style: TextStyle(color: Colors.black),
+          decoration: InputDecoration(
+            labelText: widget.labelText,
+            labelStyle: TextStyle(color: Colors.grey[600]),
+            prefixIcon: Icon(widget.prefixIcon, color: Colors.grey[600]),
+            suffixIcon: widget.suffixIcon,
+            filled: true,
+            fillColor: Color(0xFFF0F0F0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: _borderColorTween.value!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey[400]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: _borderColorTween.value!),
+            ),
+            errorText: widget.errorText,
+            errorStyle: TextStyle(color: Colors.red[300]),
+          ),
+          // New: Trim the input before validating
+          validator: (value) {
+            if (widget.validator != null) {
+              return widget.validator!(value?.trim());
+            }
+            return null;
+          },
+          // New: Trim the input when the field loses focus
+          onEditingComplete: () {
+            widget.controller.text = widget.controller.text.trim();
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    widget.controller.removeListener(_handleTextChange);
+    super.dispose();
+  }
+}
+
 // This creates a registration page that can change over time (e.g., showing error messages)
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -25,7 +132,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   // These controllers manage the text input for username, email, password, and confirm password
-  // Example: When user types "john_doe", _usernameController.text will be "john_doe"
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -61,7 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
   // This method checks if the passwords match
   void _checkPasswordsMatch() {
     setState(() {
-      _passwordsMatch = _passwordController.text.startsWith(_confirmPasswordController.text);
+      _passwordsMatch = _passwordController.text.trim() == _confirmPasswordController.text.trim();
     });
   }
 
@@ -112,20 +218,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
                       SizedBox(height: 30),
-                      // This creates the username input field
-                      TextFormField(
+                      // AnimatedTextField for username
+                      AnimatedTextField(
                         controller: _usernameController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFF0F0F0),
-                          prefixIcon: Icon(Icons.person_outline),
-                          hintText: 'Username',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        // This validates the username
+                        labelText: 'Username',
+                        prefixIcon: Icons.person_outline,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a username';
@@ -140,20 +237,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                       ),
                       SizedBox(height: 15),
-                      // This creates the email input field
-                      TextFormField(
+                      // AnimatedTextField for email
+                      AnimatedTextField(
                         controller: _emailController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFF0F0F0),
-                          prefixIcon: Icon(Icons.email_outlined),
-                          hintText: 'Email',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        // This validates the email
+                        labelText: 'Email',
+                        prefixIcon: Icons.email_outlined,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter an email';
@@ -165,35 +253,23 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                       ),
                       SizedBox(height: 15),
-                      // This creates the password input field
-                      TextFormField(
+                      // AnimatedTextField for password
+                      AnimatedTextField(
                         controller: _passwordController,
+                        labelText: 'Password',
+                        prefixIcon: Icons.lock_outline,
                         obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFF0F0F0),
-                          prefixIcon: Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              // This toggles the password visibility
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey[600],
                           ),
-                          hintText: 'Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
-                        onChanged: (value) {
-                          _checkPasswordsMatch();
-                        },
-                        // This validates the password
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a password';
@@ -205,43 +281,31 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                       ),
                       SizedBox(height: 15),
-                      // This creates the confirm password input field
-                      TextFormField(
+                      // AnimatedTextField for confirm password
+                      AnimatedTextField(
                         controller: _confirmPasswordController,
+                        labelText: 'Confirm Password',
+                        prefixIcon: Icons.lock_outline,
                         obscureText: _obscureConfirmPassword,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFF0F0F0),
-                          prefixIcon: Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              // This toggles the confirm password visibility
-                              setState(() {
-                                _obscureConfirmPassword = !_obscureConfirmPassword;
-                              });
-                            },
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey[600],
                           ),
-                          hintText: 'Confirm Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          errorText: _confirmPasswordController.text.isNotEmpty && !_passwordsMatch
-                              ? 'Passwords do not match'
-                              : null,
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirmPassword = !_obscureConfirmPassword;
+                            });
+                          },
                         ),
-                        onChanged: (value) {
-                          _checkPasswordsMatch();
-                        },
-                        // This validates the confirm password
+                        errorText: _confirmPasswordController.text.isNotEmpty && !_passwordsMatch
+                            ? 'Passwords do not match'
+                            : null,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please confirm your password';
                           }
-                          if (value != _passwordController.text) {
+                          if (value != _passwordController.text.trim()) {
                             return 'Passwords do not match';
                           }
                           return null;
@@ -271,7 +335,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               TextSpan(text: 'and '),
                               TextSpan(
                                 text: 'privacy notice',
-                                style: TextStyle(color: Color(0xFF325A3E)),
+                                style: TextStyle(color: Colors.green),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
                                     // Navigate to privacy notice page
@@ -332,7 +396,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 40),
                       // This creates the "Already have an account?" link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -385,9 +449,10 @@ class _RegisterPageState extends State<RegisterPage> {
   // This method handles the user registration process
   void _registerUser() async {
     if (_formKey.currentState!.validate()) {
-      final username = _usernameController.text;
-      final email = _emailController.text;
-      final password = _passwordController.text;
+      // Trim whitespace from input fields
+      final username = _usernameController.text.trim();
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
 
       // Attempt to register the user
       final success = await UserDatabase.registerUser(username, email, password);

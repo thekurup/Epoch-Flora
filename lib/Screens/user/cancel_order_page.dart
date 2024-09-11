@@ -53,11 +53,15 @@ class _CancelOrderPageState extends State<CancelOrderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Canceled Orders', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        title: Text('Canceled Orders', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),),
         backgroundColor: Colors.green,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => ProfilePage())),
         ),
       ),

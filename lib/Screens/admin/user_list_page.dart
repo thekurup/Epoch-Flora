@@ -41,9 +41,17 @@ class _UserListPageState extends State<UserListPage> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User List', style: GoogleFonts.poppins(color: Colors.white)),
-        backgroundColor: Color(0xFF013A09),
+        centerTitle: true,
+        title: Text('User List', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)),
+        backgroundColor: Colors.green,
         iconTheme: IconThemeData(color: Colors.white),
+         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_outlined, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Container(
         color: Colors.grey[100],

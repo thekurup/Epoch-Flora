@@ -116,7 +116,7 @@ class _LatestProductsPageState extends State<LatestProductsPage> with TickerProv
                     child: Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(builder: (context) => HomePage()),
@@ -142,40 +142,43 @@ class _LatestProductsPageState extends State<LatestProductsPage> with TickerProv
                     ),
                   ),
                   Expanded(
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: filteredProducts.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          currentIndex = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        return AnimatedBuilder(
-                          animation: _pageController,
-                          builder: (context, child) {
-                            double value = 1.0;
-                            if (_pageController.position.haveDimensions) {
-                              value = (_pageController.page! - index).abs();
-                              value = (1 - (value.clamp(0.0, 1.0))).abs();
-                            }
-                            return Center(
-                              child: SizedBox(
-                                height: Curves.easeInOut.transform(value) * 400,
-                                width: Curves.easeInOut.transform(value) * 350,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: Card3D(
-                            product: product,
-                            onTap: () => goToProductDetail(product),
-                            animationController: _animationController,
-                            onFavoriteToggle: () => toggleFavorite(product),
-                          ),
-                        );
-                      },
+                    child: FractionallySizedBox(
+                      widthFactor: 0.9,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: filteredProducts.length,
+                        onPageChanged: (index) {
+                          setState(() {
+                            currentIndex = index;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final product = filteredProducts[index];
+                          return AnimatedBuilder(
+                            animation: _pageController,
+                            builder: (context, child) {
+                              double value = 1.0;
+                              if (_pageController.position.haveDimensions) {
+                                value = (_pageController.page! - index).abs();
+                                value = (1 - (value.clamp(0.0, 1.0))).abs();
+                              }
+                              return Center(
+                                child: SizedBox(
+                                  height: Curves.easeInOut.transform(value) * 380,
+                                  width: Curves.easeInOut.transform(value) * 330,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Card3D(
+                              product: product,
+                              onTap: () => goToProductDetail(product),
+                              animationController: _animationController,
+                              onFavoriteToggle: () => toggleFavorite(product),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   Padding(
@@ -465,144 +468,167 @@ class Card3D extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white.withOpacity(0.8), Colors.white.withOpacity(0.2)],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxWidth = constraints.maxWidth;
+          final maxHeight = constraints.maxHeight;
+          
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Stack(
-                      fit: StackFit.expand,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.white.withOpacity(0.8), Colors.white.withOpacity(0.2)],
+                  ),
+                ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Hero(
-                          tag: 'product_${product.name}',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                            child: Image.file(
-                              File(product.imagePath),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.error,
-                                    color: Colors.red,
-                                    size: 50,
+                        Expanded(
+                          flex: 4,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Hero(
+                                tag: 'product_${product.name}',
+                                child: Image.file(
+                                  File(product.imagePath),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.error,
+                                        color: Colors.red,
+                                        size: maxWidth * 0.15,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.5),
+                                    shape: BoxShape.circle,
                                   ),
-                                );
-                              },
-                            ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      product.isFavorite ? Icons.favorite : Icons.favorite_border,
+                                      color: Colors.red,
+                                      size: maxWidth * 0.06,
+                                    ),
+                                    onPressed: onFavoriteToggle,
+                                    constraints: BoxConstraints(),
+                                    padding: EdgeInsets.all(8),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
+                        Expanded(
+                          flex: 1,
                           child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.8),
+                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
                             ),
-                            child: IconButton(
-                              icon: Icon(
-                                product.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: Colors.red,
-                              ),
-                              onPressed: onFavoriteToggle,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    product.name,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            '₹${product.price.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            product.category,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.blue,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: const EdgeInsets.all(12.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            product.name,
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '₹${product.price.toStringAsFixed(2)}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  product.category,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
+          );
+        },
       ),
     );
   }
@@ -628,27 +654,6 @@ extension ShakeWidget on Widget {
         );
       },
       child: this,
-    );
-  }
-}
-
-// Don't forget to update your main.dart file to include the necessary packages and run the app
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await UserDatabase.initialize();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Latest Products',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: LatestProductsPage(products: UserDatabase.getAllProducts()),
     );
   }
 }

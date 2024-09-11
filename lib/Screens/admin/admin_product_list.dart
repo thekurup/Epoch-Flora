@@ -15,17 +15,18 @@ class AdminProductList extends StatelessWidget {
     return Scaffold(
       // This creates the top bar of our page
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
           'Product List',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+            fontWeight: FontWeight.bold,),
         ),
-        backgroundColor: Color(0xFF013A09),
+        backgroundColor:Colors.green,
         // This adds a back button to the app bar
+         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_outlined, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

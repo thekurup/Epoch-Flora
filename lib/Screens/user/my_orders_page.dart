@@ -99,7 +99,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        title: Text('My Orders', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),),
         backgroundColor: Colors.green,
         elevation: 0,
         leading: IconButton(
@@ -209,6 +213,8 @@ class _OrderCardState extends State<OrderCard> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     double productTotal = widget.order.price * widget.order.quantity;
     double deliveryPrice = widget.order.deliveryPrice ?? 0;
+    // The ?? 0 part means that if deliveryPrice is null (i.e., no delivery fee is specified),
+    //  it defaults to 0. This is a safety measure to avoid null values.
     double total = productTotal + deliveryPrice;
 
     return Card(

@@ -40,11 +40,14 @@ class _AdminOrderListPageState extends State<AdminOrderListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order List', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        title: Text('Order List',  style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)),
         backgroundColor: Colors.green,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

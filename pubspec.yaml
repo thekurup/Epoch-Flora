@@ -113,6 +113,9 @@ flutter:
     - assets/icons/nearby_hub.svg
     - assets/animations/plant_search.json
     - assets/animations/no_results.json
+    - assets/images/try.png
+    - assets/images/try1.jpg
+    - assets/images/try2.jpeg
 
     
 

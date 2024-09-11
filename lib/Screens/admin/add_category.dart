@@ -249,9 +249,16 @@ class _AddCategoryState extends State<AddCategory> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Manage Categories', style: GoogleFonts.inter(color: Colors.white)),
+      appBar: AppBar(centerTitle: true,
+        title: Text('Manage Categories', style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)),
         backgroundColor: Colors.green,
+         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_outlined, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -319,7 +326,7 @@ class _AddCategoryState extends State<AddCategory> {
                               width: 200,
                               child: ElevatedButton(
                                 onPressed: _saveCategory,
-                                child: Text('Save Category'),
+                                child: Text('Save Category',style: TextStyle(color: Colors.white),),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Color(0xFF013A09),
                                   padding: EdgeInsets.symmetric(vertical: 15),
