@@ -7,9 +7,9 @@
 Epoch Flora is a comprehensive plant e-commerce application that demonstrates advanced Flutter development concepts. This project teaches:
 
 - **Local Database Management** with Hive
-- **State Management** with Provider pattern
+- **State Management** with setState pattern
 - **Cross-platform Development** (Mobile + Web)
-- **Firebase Integration** for deployment
+- **Offline-first Architecture** for complete local functionality
 - **Advanced UI/UX** with animations and gradients
 - **Dual User Interfaces** (Customer + Admin)
 - **Real-time Order Tracking** with status management
@@ -39,14 +39,14 @@ Perfect for developers learning Flutter through a real-world, feature-complete a
 
 - **Framework**: Flutter 3.4.1+ (Cross-platform mobile/web)
 - **Database**: Hive (Local NoSQL database)
-- **State Management**: Provider pattern
+- **State Management**: setState pattern
 - **Authentication**: Custom with SHA-256 password hashing
 - **Storage**: SharedPreferences for session management
 - **UI Components**: Material Design with custom animations
 - **Fonts**: Google Fonts (Poppins, Inter, Playfair Display)
 - **Animations**: Lottie animations for enhanced UX
 - **Image Handling**: Image picker with local storage
-- **Deployment**: Firebase Hosting ready
+- **Architecture**: Offline-first with local data persistence
 
 ## 🚀 Installation Guide
 
@@ -181,7 +181,7 @@ flutter build ios --release
 ### **Database & State Management**
 - Local database design with Hive
 - CRUD operations implementation
-- Provider pattern for state management
+- setState pattern for state management
 - Data validation and error handling
 
 ### **UI/UX Design**
@@ -227,6 +227,7 @@ flutter build ios --release
 - **Unit Testing** - Comprehensive test coverage
 - **CI/CD Pipeline** - Automated testing and deployment
 - **Performance Optimization** - Image compression and lazy loading
+- **Cloud Integration** - Optional cloud backup and sync features
 
 ## 🤝 Contributing
 
@@ -240,8 +241,8 @@ This project is perfect for learning Flutter development. Feel free to:
 
 For questions about this learning project:
 - **Developer**: Arjun Kurup
-- **Email**: arjunurup242gmail.com
-- **GitHub**: https://github.com/thekurup
+- **Email**: iamarjunkurup@gmail.com
+- **GitHub**: [Your GitHub Profile]
 
 ## 📄 License
 
